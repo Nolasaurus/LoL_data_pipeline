@@ -62,11 +62,18 @@ def getMatchTimeline(match_id, API_key):
         return None
 
 
-
-
-
-
-
+def getSummonerIdFromLeague(match_id, API_key, queueType='RANKED_SOLO_5X5', tier="DIAMOND", rank="IV"):
+    base_url = 'https://na1.api.riotgames.com/lol/league/v4/entries/RANKED_SOLO_5x5/DIAMOND/IV?page=1&api_key=RGAPI-cb9aee93-fafa-4b49-9b24-4cdf4183fd74'
+    url = base_url.format(match_id, API_key)
+    
+    response = requests.get(url)
+    
+    if response.status_code == 200:
+        match_timeline = response.json()
+        return match_timeline
+    else:
+        print(f"Error: {response.status_code}")
+        return None
 # get league
 # https://developer.riotgames.com/apis#league-v4/GET_getGrandmasterLeague
 
