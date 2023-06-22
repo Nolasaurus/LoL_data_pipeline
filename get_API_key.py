@@ -10,4 +10,4 @@ def get_API_key():
     except IOError:
         print("Error reading the file.")
 
-    return API_key 
+    return API_key
