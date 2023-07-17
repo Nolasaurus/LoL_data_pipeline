@@ -9,5 +9,4 @@ def get_API_key():
         print("File not found.")
     except IOError:
         print("Error reading the file.")
-
     return API_key
