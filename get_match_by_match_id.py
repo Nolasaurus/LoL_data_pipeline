@@ -8,8 +8,8 @@ def get_match_by_match_id(match_id):
     response = requests.get(url)
     
     if response.status_code == 200:
-        match_timeline = response.json()
-        return match_timeline
+        match = response.json()
+        return match
     else:
         print(f"Error: {response.status_code}")
         return None
