@@ -1,5 +1,5 @@
 import requests
-from get_API_key import get_API_key
+from src.get_API_key import get_API_key
 
 # get PUU-id from summonerId
 def get_puuid_by_summon_id(summoner_id):
