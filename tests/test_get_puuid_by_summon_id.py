@@ -18,8 +18,8 @@ class TestGetPuuidBySummonId(unittest.TestCase):
 
         summoner_id = 'hNYHxf7iXp1BhGgk_JzZiU00AzmUNQ058d8ZZzKYUYtty87Z'
         result = get_puuid_by_summon_id(summoner_id)
-
-        self.assertEqual(result, 'QeQevDlzR9buXaCEj3GqHyV9ZWxMrs-ltqdgsReyS7_Lu1wuMKhv7xqybkCEbRNHmn2OlqoS_xYjhw')
+        valid_puuid = 'QeQevDlzR9buXaCEj3GqHyV9ZWxMrs-ltqdgsReyS7_Lu1wuMKhv7xqybkCEbRNHmn2OlqoS_xYjhw'
+        self.assertEqual(result, valid_puuid)
 
     @patch('src.get_puuid_by_summon_id.requests.get')
     def test_failure_case(self, mock_get):
