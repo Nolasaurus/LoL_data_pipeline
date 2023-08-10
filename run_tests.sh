@@ -1,14 +1,36 @@
 #!/bin/bash
 
-echo "Running test_get_match_by_match_id..."
-python -m unittest tests.test_get_match_by_match_id
+# Define color codes
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
 
-echo "Running test_get_puuid_by_summon_id..."
-python -m unittest tests.test_get_puuid_by_summon_id
+# Initialize counters for passed and failed tests
+PASSED=0
+FAILED=0
 
-echo "Running test_get_match_ids_by_puuid..."
-python -m unittest tests.test_get_match_ids_by_puuid
+function run_test {
+    echo -e "Running $1..."
+    python -m unittest $1
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}PASSED${NC}"
+        ((PASSED++))
+    else
+        echo -e "${RED}FAILED${NC}"
+        ((FAILED++))
+    fi
+}
 
-# Add more test commands as needed
+# Iterate through test files in the 'tests' directory
+for test_file in tests/test_*.py; do
+    # Extract the module name from the file path
+    test_module="tests.${test_file#tests/}"
+    test_module="${test_module%.py}"
+    
+    # Run the test
+    run_test $test_module
+done
 
-echo "All tests completed."
+echo -e "\nAll tests completed."
+echo -e "${GREEN}Passed: $PASSED${NC}"
+echo -e "${RED}Failed: $FAILED${NC}"
