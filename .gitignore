@@ -2,3 +2,4 @@ API-key.txt
 __pycache__
 .conda
 postgres_pw.txt
+tests/files/
