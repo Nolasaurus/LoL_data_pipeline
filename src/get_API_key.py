@@ -1,4 +1,4 @@
-def get_API_key(file_path="API-key.txt"):
+def get_API_key(file_path="/home/nolan/projects/LoL_data_pipeline/API-key.txt"):
     API_key = None
 
     try:
