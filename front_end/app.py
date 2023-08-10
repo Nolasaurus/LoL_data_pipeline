@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+from src.get_match_ids_by_puuid import get_match_ids_by_puuid
 import psycopg2
 
 app = Flask(__name__, static_url_path='', static_folder='static')

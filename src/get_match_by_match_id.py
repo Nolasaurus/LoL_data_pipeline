@@ -1,5 +1,5 @@
 import requests
-from src.get_API_key import get_API_key
+from get_API_key import get_API_key
 
 def get_match_by_match_id(match_id):
     base_url = 'https://americas.api.riotgames.com/lol/match/v5/matches/{}?api_key={}'

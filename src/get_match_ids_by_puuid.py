@@ -1,6 +1,6 @@
 import requests
 
-from src.get_API_key import get_API_key
+from get_API_key import get_API_key
 
 def get_match_ids_by_puuid(puu_id, start=0, count=20):
     base_url = 'https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puu_id}/ids?start={start}&count={count}&api_key={API_key}'
@@ -13,4 +13,3 @@ def get_match_ids_by_puuid(puu_id, start=0, count=20):
     else:
         print(f"Error: {response.status_code}")
         return None
-
