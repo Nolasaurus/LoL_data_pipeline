@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 def connect_db():
-    with open('../postgres_pw.txt', 'r') as file:
+    with open('/home/nolan/projects/LoL_data_pipeline/postgres_pw.txt', 'r') as file:
         password = file.read().strip()  # Reads the content and removes any leading/trailing whitespace
     return psycopg2.connect(
         dbname="loldb",

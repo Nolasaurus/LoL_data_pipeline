@@ -19,14 +19,12 @@ def lookup():
     else:
         return "Summoner name not found or an error occurred", 400
 
-
-
 @app.route('/match/<match_id>')
 def get_match(match_id):
-    match_details_json = get_match_by_match_id(match_id)
+    match_details_json, match_timeline_json = get_match_by_match_id(match_id)
     match_details_df = extract_data_from_match(match_details_json)
     match_details = match_details_df.to_records(index=False)
-    return render_template('match_data.html', match_details=match_details, columns=match_details_df.columns)
+    return render_template('match.html', match_details=match_details, columns=match_details_df.columns)
 
 @app.route('/')
 def index():
