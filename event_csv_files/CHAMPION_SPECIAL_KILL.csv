@@ -1,7 +1,0 @@
-timestamp,killerId,position,killType,multiKillLength
-199174,7.0,"{'x': 2520, 'y': 12315}",KILL_FIRST_BLOOD,
-603979,9.0,"{'x': 11046, 'y': 1836}",KILL_MULTI,2.0
-711229,9.0,"{'x': 11296, 'y': 3552}",KILL_MULTI,2.0
-712632,9.0,"{'x': 10889, 'y': 3505}",KILL_MULTI,3.0
-1284776,6.0,"{'x': 10700, 'y': 1250}",KILL_MULTI,2.0
-1295011,9.0,"{'x': 2776, 'y': 4028}",KILL_MULTI,2.0
