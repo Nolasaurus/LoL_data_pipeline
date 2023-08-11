@@ -7,7 +7,9 @@
     <title>Matches</title>
 </head>
 <body>
-    <h1>{{ puuid }}</h1>
+    <h1>Summoner: {{ summoner_name }}</h1>
+    <h1>Match Ids</h1>
+    
     <div class="matches">
         {% for match_id in match_ids %}
             <a href="{{ url_for('get_match', match_id=match_id) }}" target="_blank">{{ match_id }}</a><br>

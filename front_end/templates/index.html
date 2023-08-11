@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>League of Legends match_id lookup</title>
+    <title>League of Legends Summoner Lookup</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h1 style="text-align:center; font-weight:bold;">League of Legends match_id lookup</h1>
+    <h1 style="text-align:center; font-weight:bold;">League of Legends Summoner lookup</h1>
     <form action="/lookup" method="post" style="text-align:center;">
-        <input type="text" name="puuid" placeholder="Enter PUUid">
+        <input type="text" name="summoner_name" placeholder="Enter Summoner name">
         <input type="submit" value="Lookup">
     </form>
     {% with messages = get_flashed_messages() %}
