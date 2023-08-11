@@ -1,41 +1,28 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from src.get_match_ids_by_puuid import get_match_ids_by_puuid
-import psycopg2
+from src.get_match_by_match_id import get_match_by_match_id
+from src.extract_data_from_match import extract_data_from_match
 
 app = Flask(__name__, static_url_path='', static_folder='static')
 app.secret_key = "supersecretkey"  # Needed for flash messages
 
-def connect_db():
-    with open('postgres_pw.txt', 'r') as file:
-        password = file.read().strip()  # Reads the content and removes any leading/trailing whitespace
-    return psycopg2.connect(
-        dbname="loldb",
-        user="postgres",
-        password=password,
-        host="localhost",
-        port="5432"
-    )
+@app.route('/lookup', methods=['POST'])
+def lookup():
+    puuid = request.form['puuid']
+    match_ids = get_match_ids_by_puuid(puuid)
+    return render_template('matches.html', puuid=puuid, match_ids=match_ids)
+
+
+@app.route('/match/<match_id>')
+def get_match(match_id):
+    match_details_json = get_match_by_match_id(match_id)
+    match_details_df = extract_data_from_match(match_details_json)
+    match_details = match_details_df.to_records(index=False)
+    return render_template('match_data.html', match_details=match_details, columns=match_details_df.columns)
 
 @app.route('/')
 def index():
     return render_template('index.html')
-
-@app.route('/lookup', methods=['POST'])
-def lookup():
-    puuid = request.form['puuid']
-    connection = connect_db()
-    cursor = connection.cursor()
-    cursor.execute("SELECT * FROM puuid WHERE puuid = %s", (puuid,))
-    result = cursor.fetchall()
-    connection.close()
-
-    if result:
-        # Here you can render another template with the result or handle it differently
-        flash(f"Lookup successful: {result}")
-    else:
-        flash("PUUid not found.")
-
-    return redirect(url_for('index'))
 
 if __name__ == '__main__':
     app.run(debug=True)
