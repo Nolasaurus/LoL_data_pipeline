@@ -1,25 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Summoner Match History</title>
-    <!-- Include CSS file here -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Matches</title>
 </head>
 <body>
-    <h1>{{ summoner_name }}</h1>
-    <h3>Last 3 Matches:</h3>
-    {% for match in matches %}
-        <div class="match">
-            {% for player in match.players %}
-                <div class="player">
-                    <p>Name: {{ player.summoner_name }}</p>
-                    <p>Champion: {{ player.champion }}</p>
-                    <img src="{{ player.champion_img }}" alt="{{ player.champion }}">
-                    <p>Level: {{ player.level }}</p>
-                    <p>K/D/A: {{ player.kda }}</p>
-                    <p>Win: {{ player.win }}</p>
-                </div>
-            {% endfor %}
-        </div>
-    {% endfor %}
+    <h1>Summoner: {{ summoner_name }}</h1>
+    <h1>Last 3 Matches</h1>
+    
+    <div class="matches">
+        {% for match in matches %}
+            <h2>Match ID: {{ match.match_id }}</h2>
+            <table>
+                <thead>
+                    <tr>
+                        {% for column in match.columns %}
+                            <th>{{ column }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for participant in match.details %} <!-- Use 'details' instead of 'participants' -->
+                        <tr>
+                            {% for column in match.columns %}
+                                <td>{{ participant[column] }}</td> <!-- Access values by column name -->
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+    </div>
 </body>
 </html>
