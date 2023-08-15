@@ -8,18 +8,9 @@
 </head>
 <body>
     <h1 style="text-align:center; font-weight:bold;">League of Legends Summoner lookup</h1>
-    <form action="/lookup" method="post" style="text-align:center;">
+    <form action="/summoner" method="post" style="text-align:center;">
         <input type="text" name="summoner_name" placeholder="Enter Summoner name">
         <input type="submit" value="Lookup">
     </form>
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class="flashes">
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
 </body>
 </html>
