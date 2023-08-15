@@ -1,20 +1,10 @@
-import os
 import json
 import psycopg2
 from psycopg2 import sql
 import subprocess
 import sys
+from src.connect_db import connect_db
 
-def connect_db():
-    with open('/home/nolan/projects/LoL_data_pipeline/postgres_pw.txt', 'r') as file:
-        password = file.read().strip()  # Reads the content and removes any leading/trailing whitespace
-    return psycopg2.connect(
-        dbname="loldb",
-        user="postgres",
-        password=password,
-        host="localhost",
-        port="5432"
-    )
 
 def create_table():
     with connect_db() as conn:
