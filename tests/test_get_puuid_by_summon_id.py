@@ -1,11 +1,11 @@
 import unittest
 from unittest.mock import patch
 import json
-from src.get_puuid_by_summon_id import get_puuid_by_summon_id
+from src.api_client import API_client
 
 class TestGetPuuidBySummonId(unittest.TestCase):
 
-    @patch('src.get_puuid_by_summon_id.requests.get')
+    @patch('src.api_client.requests.get')
     def test_successful_case(self, mock_get):
         # Read the expected response from the JSON file
         with open('tests/files/hNYHxf7iXp1BhGgk_JzZiU00AzmUNQ058d8ZZzKYUYtty87Z.json', 'r') as file:
@@ -17,18 +17,20 @@ class TestGetPuuidBySummonId(unittest.TestCase):
         mock_response.json.return_value = expected_data
 
         summoner_id = 'hNYHxf7iXp1BhGgk_JzZiU00AzmUNQ058d8ZZzKYUYtty87Z'
-        result = get_puuid_by_summon_id(summoner_id)
+        client = API_client()
+        result = client.get_puuid_by_summon_id(summoner_id)
         valid_puuid = 'QeQevDlzR9buXaCEj3GqHyV9ZWxMrs-ltqdgsReyS7_Lu1wuMKhv7xqybkCEbRNHmn2OlqoS_xYjhw'
         self.assertEqual(result, valid_puuid)
 
-    @patch('src.get_puuid_by_summon_id.requests.get')
+    @patch('src.api_client.requests.get')
     def test_failure_case(self, mock_get):
         # Mocking a failure response from the API
         mock_response = mock_get.return_value
         mock_response.status_code = 404
 
         summoner_id = 'invalid_summoner_id'
-        result = get_puuid_by_summon_id(summoner_id)
+        client = API_client()
+        result = client.get_puuid_by_summon_id(summoner_id)
 
         self.assertEqual(result, None)
 
