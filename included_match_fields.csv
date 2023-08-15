@@ -1,13 +1,11 @@
 placeholder_first_row_cut_off_for_some_reason
 summonerName
 championName
+champLevel
 kills
 deaths
 assists
-champLevel
-champExperience
 goldEarned
-goldSpent
 item0
 item1
 item2
@@ -15,9 +13,6 @@ item3
 item4
 item5
 item6
-participantId
-teamId
-totalDamageDealt
 totalDamageDealtToChampions
 totalDamageTaken
 totalHeal

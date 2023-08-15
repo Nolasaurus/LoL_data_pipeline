@@ -8,11 +8,8 @@
 </head>
 <body>
     <h1>Summoner: {{ summoner_name }}</h1>
-    <h1>Last 3 Matches</h1>
-    
     <div class="matches">
         {% for match in matches %}
-            <h2>Match ID: {{ match.match_id }}</h2>
             <table>
                 <thead>
                     <tr>
@@ -22,15 +19,15 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for participant in match.details %} <!-- Use 'details' instead of 'participants' -->
-                        <tr>
+                    {% for participant in match.details %}
+                        <tr class="{{ 'winner' if participant.win else 'loser' }}">
                             {% for column in match.columns %}
-                                <td>{{ participant[column] }}</td> <!-- Access values by column name -->
+                                <td>{{ participant[column] }}</td>
                             {% endfor %}
                         </tr>
                     {% endfor %}
                 </tbody>
-            </table>
+                
         {% endfor %}
     </div>
 </body>

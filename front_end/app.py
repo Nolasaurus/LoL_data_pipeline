@@ -28,13 +28,13 @@ def get_match(match_id):
     match_details_json, match_timeline_json = get_match_by_match_id(match_id)
     match_details_df = extract_data_from_match(match_details_json)
     match_details = match_details_df.to_dict(orient='records')  # Convert DataFrame to list of dictionaries
-    gold_data = extract_gold_data(match_id)
-    gold_chart_base64 = plot_gold_data(gold_data)
+    # gold_data = extract_gold_data(match_id)
+    # gold_chart_base64 = plot_gold_data(gold_data)
 
     return {
         "match_id": match_id,
         "details": match_details,
-        "gold_chart": gold_chart_base64,
+        # "gold_chart": gold_chart_base64,
         "columns": match_details_df.columns.tolist()
     }
 
