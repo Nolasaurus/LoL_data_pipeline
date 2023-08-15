@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Summoner Match History</title>
+    <!-- Include CSS file here -->
+</head>
+<body>
+    <h1>{{ summoner_name }}</h1>
+    <h3>Last 3 Matches:</h3>
+    {% for match in matches %}
+        <div class="match">
+            {% for player in match.players %}
+                <div class="player">
+                    <p>Name: {{ player.summoner_name }}</p>
+                    <p>Champion: {{ player.champion }}</p>
+                    <img src="{{ player.champion_img }}" alt="{{ player.champion }}">
+                    <p>Level: {{ player.level }}</p>
+                    <p>K/D/A: {{ player.kda }}</p>
+                    <p>Win: {{ player.win }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</body>
+</html>
