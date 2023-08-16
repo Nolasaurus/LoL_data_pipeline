@@ -19,6 +19,18 @@ class API_client:
         except requests.exceptions.Timeout:
             print(f"Request timed out for url: {url}")
             return None
+        
+    def get_puuid_by_name(self, summoner_name):
+        summoner_name_encoded = summoner_name.strip().replace(" ", "%20") # remove leading/trailing whitespaces and encode space character
+        url = f'https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name_encoded}?api_key={self.api_key}'
+        response = self._make_request(url, timeout=5)
+        if response is not None:
+            return response['puuid']
+        else:
+            # Handle the case where the request fails
+            return None
+
+
 
     def get_match_by_match_id(self, match_id):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}?api_key={self.api_key}'
@@ -26,10 +38,11 @@ class API_client:
         if response and isinstance(response, str):
             return json.loads(response)
         return response
-
+    
     def get_match_ids_by_puuid(self, puu_id, start=0, count=20):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puu_id}/ids?start={start}&count={count}&api_key={self.api_key}'
-        return self._make_request(url)
+        return self._make_request(url, timeout=5)
+
 
     def get_match_timeline(self, match_id):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline?api_key={self.api_key}'
@@ -37,6 +50,9 @@ class API_client:
         if response and isinstance(response, str):
             return json.loads(response)
         return response
+
+        
+
 
     def get_puuid_by_name(self, summoner_name):
         summoner_name_encoded = summoner_name.strip().replace(" ", "%20") # Remove leading/trailing whitespaces and encode space character
