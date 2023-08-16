@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request
 from src.api_client import API_client
 from src.extract_data_from_match import extract_data_from_match
 from src.record_handler import RecordHandler, DatabaseConnectionError, DatabaseQueryError  # Import custom exceptions
