@@ -1,9 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request
 from src.api_client import API_client
 from src.extract_data_from_match import extract_data_from_match
-from src.upload_matches import get_and_insert_match
-from src.extract_and_plot_gold_over_time import extract_gold_data, plot_gold_data
-from src.connect_db import connect_db
 
 app = Flask(__name__, static_url_path='', static_folder='static')
 
@@ -23,22 +20,15 @@ def lookup():
         return "Summoner name not found or an error occurred", 400
 
 def get_match(match_id):
-    match_details_json, match_timeline_json = API_client().get_match_by_match_id(match_id)
+    match_details_json = API_client().get_match_by_match_id(match_id)
     match_details_df = extract_data_from_match(match_details_json)
-    match_details = match_details_df.to_dict(orient='records')  # Convert DataFrame to list of dictionaries
-    # gold_data = extract_gold_data(match_id)
-    # gold_chart_base64 = plot_gold_data(gold_data)
+    match_details = match_details_df.to_dict(orient='records')  # Convert df to list of dicts
 
     return {
         "match_id": match_id,
         "details": match_details,
-        # "gold_chart": gold_chart_base64,
         "columns": match_details_df.columns.tolist()
     }
-
-# @app.route('/champion/<champion_id>')
-
-# @app.route('/summoner/<summoner_name>')
 
 if __name__ == '__main__':
     app.run(debug=True)

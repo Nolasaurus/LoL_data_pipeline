@@ -25,6 +25,7 @@ class API_client:
 
         response = self._make_request(url, timeout=5)
         if response is not None:
+            # update player table
             return response['puuid']
         else:
             # Handle the case where the request fails
@@ -33,12 +34,15 @@ class API_client:
     
     def get_match_ids_by_puuid(self, puu_id, start=0, count=20):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puu_id}/ids?start={start}&count={count}&api_key={self.api_key}'
+        # update player_match table first
         return self._make_request(url, timeout=5)
 
     def get_match_by_match_id(self, match_id):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}?api_key={self.api_key}'
+        # update match_data table first
         return self._make_request(url, timeout=5)
 
     def get_match_timeline(self, match_id):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline?api_key={self.api_key}'
+        # update match_timeline table first
         return self._make_request(url, timeout=5)
