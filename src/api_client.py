@@ -20,9 +20,12 @@ class API_client:
             print(f"Request timed out for url: {url}")
             return None
         
-    def get_puuid_by_name(self, summoner_name):
-        summoner_name_encoded = summoner_name.strip().replace(" ", "%20") # remove leading/trailing whitespaces and encode space character
+    def get_SummonerDTO_by_name(self, summoner_name):
+        # remove leading/trailing whitespaces and encode space character
+        summoner_name_encoded = summoner_name.strip().replace(" ", "%20")
+
         url = f'https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name_encoded}?api_key={self.api_key}'
+<<<<<<< HEAD
         response = self._make_request(url, timeout=5)
         if response is not None:
             # update player table
@@ -39,20 +42,32 @@ class API_client:
         if response and isinstance(response, str):
             return json.loads(response)
         return response
+=======
+        return self._make_request(url, timeout=5 ) # JSON
+>>>>>>> c8b4acf (rename to match official API)
     
-    def get_match_ids_by_puuid(self, puu_id, start=0, count=20):
+    def get_matches_by_puuid(self, puu_id, start=0, count=20):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puu_id}/ids?start={start}&count={count}&api_key={self.api_key}'
+<<<<<<< HEAD
+=======
+        # return value: List[string]
+>>>>>>> c8b4acf (rename to match official API)
         return self._make_request(url, timeout=5)
 
-    def get_match_by_match_id(self, match_id):
+    def get_MatchDto_by_match_id(self, match_id):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}?api_key={self.api_key}'
+<<<<<<< HEAD
         response = self._make_request(url, timeout=5)
         if response and isinstance(response, str):
             return json.loads(response)
         return response
+=======
+        return self._make_request(url, timeout=5) # JSON
+>>>>>>> c8b4acf (rename to match official API)
 
-    def get_match_timeline(self, match_id):
+    def get_MatchTimelineDto_by_match_id(self, match_id):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline?api_key={self.api_key}'
+<<<<<<< HEAD
         response = self._make_request(url, timeout=5)
         if response and isinstance(response, str):
             return json.loads(response)
@@ -78,3 +93,6 @@ class API_client:
         else:
             return None
 
+=======
+        return self._make_request(url, timeout=5) # JSON
+>>>>>>> c8b4acf (rename to match official API)

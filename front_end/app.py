@@ -1,8 +1,12 @@
 from flask import Flask, render_template, request
 from src.api_client import API_client
+<<<<<<< HEAD
 from src.extract_data_from_match import extract_data_from_match
 from src.record_handler import RecordHandler, DatabaseConnectionError, DatabaseQueryError  # Import custom exceptions
 from src.connect_db import connect_db
+=======
+import pandas as pd
+>>>>>>> c8b4acf (rename to match official API)
 
 app = Flask(__name__, static_url_path='', static_folder='static')
 api_client = API_client()
@@ -31,10 +35,34 @@ def lookup():
         app.logger.error(f"Error occurred: {e}")
         return "An error occurred while processing your request. Please try again later.", 500
 
+def extract_data_from_match(match_data):
+    metadata = match_data['metadata']
+    info = match_data['info']
+    match_id = metadata['matchId']
+    game_duration = info['gameDuration']
+
+    included_fields = pd.read_csv('/home/nolan/projects/LoL_data_pipeline/included_match_fields.csv')
+    included_fields_list = included_fields.iloc[:, 0].tolist()    
+    
+    data = pd.DataFrame(info['participants'])[included_fields_list]
+    # data.insert(0, 'PUUid', metadata['participants'])
+    # data.insert(0, 'match_id', match_id)
+    
+    return data    
+
+# data for match details table
+
 def get_match(match_id):
+<<<<<<< HEAD
     try:
         # Check the database first for match details
         match_details_json, match_timeline_json = record_handler.check_db_for_match(match_id)
+=======
+    match_details_json = API_client().get_match_by_match_id(match_id)
+    match_details_df = extract_data_from_match(match_details_json)
+    # Convert df to list of dicts
+    match_details = match_details_df.to_dict(orient='records')  
+>>>>>>> c8b4acf (rename to match official API)
 
         match_details_df = extract_data_from_match(match_details_json)
         match_details = match_details_df.to_dict(orient='records')  # Convert DataFrame to list of dictionaries
@@ -51,6 +79,22 @@ def get_match(match_id):
             "details": [],
             "columns": []
         }
+
+def extract_events_from_timeline(match_timeline):
+    game_event_df = pd.DataFrame()
+    # TODO implement pFrames
+    # game_pFrames_df = pd.DataFrame()
+    for i, frame in enumerate(match_timeline['info']['frames']):
+        events = pd.DataFrame(match_timeline['info']['frames'][i]['events'])
+        # TODO 
+        # pFrames = pd.DataFrame(match_timeline['info']['frames'][i]['participantFrames'])
+
+        # concat events to game_event_df
+        game_event_df = pd.concat([game_event_df, events], ignore_index=True)
+        
+        # game_pFrames_df = pd.concat([game_pFrames_df, pFrames], ignore_index=True)
+
+    return game_event_df #, game_pFrames_df
 
 if __name__ == '__main__':
     app.run(debug=True)
