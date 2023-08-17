@@ -17,7 +17,7 @@ class TestGetMatchTimeline(unittest.TestCase):
         mock_response.json.return_value = expected_timeline_data
 
         match_id = 'NA1_4729149632'
-        result = API_client().get_match_timeline(match_id)
+        result = API_client().get_MatchTimelineDto_by_match_id(match_id)
 
         self.assertEqual(result, expected_timeline_data)
 
@@ -28,7 +28,7 @@ class TestGetMatchTimeline(unittest.TestCase):
         mock_response.status_code = 404
 
         match_id = 'invalid_match_id'
-        result = API_client().get_match_timeline(match_id)
+        result = API_client().get_MatchTimelineDto_by_match_id(match_id)
 
         self.assertEqual(result, None)
 
