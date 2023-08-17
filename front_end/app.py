@@ -1,9 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
+from flask import Flask, render_template, request
 from src.api_client import API_client
-from src.extract_data_from_match import extract_data_from_match
-from src.upload_matches import get_and_insert_match
-from src.extract_and_plot_gold_over_time import extract_gold_data, plot_gold_data
-from src.connect_db import connect_db
+import pandas as pd
 
 app = Flask(__name__, static_url_path='', static_folder='static')
 
@@ -22,23 +19,50 @@ def lookup():
     else:
         return "Summoner name not found or an error occurred", 400
 
+def extract_data_from_match(match_data):
+    metadata = match_data['metadata']
+    info = match_data['info']
+    match_id = metadata['matchId']
+    game_duration = info['gameDuration']
+
+    included_fields = pd.read_csv('/home/nolan/projects/LoL_data_pipeline/included_match_fields.csv')
+    included_fields_list = included_fields.iloc[:, 0].tolist()    
+    
+    data = pd.DataFrame(info['participants'])[included_fields_list]
+    # data.insert(0, 'PUUid', metadata['participants'])
+    # data.insert(0, 'match_id', match_id)
+    
+    return data    
+
+# data for match details table
+
 def get_match(match_id):
-    match_details_json, match_timeline_json = API_client().get_match_by_match_id(match_id)
+    match_details_json = API_client().get_match_by_match_id(match_id)
     match_details_df = extract_data_from_match(match_details_json)
-    match_details = match_details_df.to_dict(orient='records')  # Convert DataFrame to list of dictionaries
-    # gold_data = extract_gold_data(match_id)
-    # gold_chart_base64 = plot_gold_data(gold_data)
+    # Convert df to list of dicts
+    match_details = match_details_df.to_dict(orient='records')  
 
     return {
         "match_id": match_id,
         "details": match_details,
-        # "gold_chart": gold_chart_base64,
         "columns": match_details_df.columns.tolist()
     }
 
-# @app.route('/champion/<champion_id>')
+def extract_events_from_timeline(match_timeline):
+    game_event_df = pd.DataFrame()
+    # TODO implement pFrames
+    # game_pFrames_df = pd.DataFrame()
+    for i, frame in enumerate(match_timeline['info']['frames']):
+        events = pd.DataFrame(match_timeline['info']['frames'][i]['events'])
+        # TODO 
+        # pFrames = pd.DataFrame(match_timeline['info']['frames'][i]['participantFrames'])
 
-# @app.route('/summoner/<summoner_name>')
+        # concat events to game_event_df
+        game_event_df = pd.concat([game_event_df, events], ignore_index=True)
+        
+        # game_pFrames_df = pd.concat([game_pFrames_df, pFrames], ignore_index=True)
+
+    return game_event_df #, game_pFrames_df
 
 if __name__ == '__main__':
     app.run(debug=True)

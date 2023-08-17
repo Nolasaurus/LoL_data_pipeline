@@ -19,7 +19,7 @@ class TestGetMatchIdsByPuuid(unittest.TestCase):
 
         puu_id = 'QeQevDlzR9buXaCEj3GqHyV9ZWxMrs-ltqdgsReyS7_Lu1wuMKhv7xqybkCEbRNHmn2OlqoS_xYjhw'
         client = API_client() # Replace with actual API key
-        result = client.get_match_ids_by_puuid(puu_id, start=0, count=3)
+        result = client.get_matches_by_puuid(puu_id, start=0, count=3)
 
         self.assertEqual(result, expected_match_ids)
 
@@ -31,7 +31,7 @@ class TestGetMatchIdsByPuuid(unittest.TestCase):
 
         puu_id = 'invalid_puu_id'
         client = API_client() # Replace with actual API key
-        result = client.get_match_ids_by_puuid(puu_id)
+        result = client.get_matches_by_puuid(puu_id)
 
         self.assertEqual(result, None)
 
