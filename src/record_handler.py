@@ -1,5 +1,13 @@
 from src.connect_db import connect_db
 from src.api_client import API_client
+from psycopg2.extras import Json
+
+# Define custom exceptions
+class DatabaseConnectionError(Exception):
+    pass
+
+class DatabaseQueryError(Exception):
+    pass
 
 class RecordHandler:
     def __init__(self):
@@ -7,18 +15,16 @@ class RecordHandler:
         self.conn = self._connect_to_db()
         self.api_client = API_client()  # Create an instance of the API_client class
 
-
     def _connect_to_db(self):
         try:
             return connect_db()
         except Exception as e:
-            print(f"Error connecting to the database: {e}")
-            return None
+            print("Exception caught:", e)  # Debug print
+            raise DatabaseConnectionError(f"Error connecting to the database: {e}")
 
     def check_db_for_summoner_name(self, summoner_name):
         if not self.conn:
-            print("Database connection is not available.")
-            return None
+            raise DatabaseConnectionError("Database connection is not available.")
 
         cursor = self.conn.cursor()
         try:
@@ -36,14 +42,13 @@ class RecordHandler:
                 return puuid
 
         except Exception as e:
-            print(f"Error querying the database: {e}")
-            return None
+            raise DatabaseQueryError(f"Error querying the database: {e}")
+
 
     def check_db_for_match_ids(self, puuid):
         if not self.conn:
-            print("Database connection is not available.")
-            return None
-
+            raise DatabaseConnectionError("Database connection is not available.")
+        
         cursor = self.conn.cursor()
         try:
             # Query the 'match_ids' table for the puuid
@@ -66,18 +71,17 @@ class RecordHandler:
                 return match_ids
 
         except Exception as e:
-            print(f"Error querying the database: {e}")
-            return None
+            raise DatabaseQueryError(f"Error querying the database: {e}")
+
 
     def check_db_for_match(self, match_id):
         if not self.conn:
-            print("Database connection is not available.")
-            return None
-
+            raise DatabaseConnectionError("Database connection is not available.")
+        
         cursor = self.conn.cursor()
         try:
             # Query the 'match' table for the match_id
-            cursor.execute("SELECT match_json, match_timeline_json FROM match WHERE match_id=%s", (match_id,))
+            cursor.execute("SELECT match, match_timeline FROM match WHERE match_id=%s", (match_id,))
             row = cursor.fetchone()
 
             if row:
@@ -86,11 +90,18 @@ class RecordHandler:
                 # If the match_id doesn't exist in the database, fetch it from the API
                 match_json = self.api_client.get_match_by_match_id(match_id)
                 match_timeline_json = self.api_client.get_match_timeline(match_id)
-                cursor.execute("INSERT INTO match (match_id, match_json, match_timeline_json) VALUES (%s, %s, %s)", 
-                               (match_id, match_json, match_timeline_json))
+                
+                if match_json is None:
+                    raise ValueError("API returned None for match data.")
+
+                if match_timeline_json is None:
+                    raise ValueError("API returned None for timeline.")
+
+                cursor.execute("INSERT INTO match (match_id, match, match_timeline) VALUES (%s, %s, %s)", 
+                            (match_id, Json(match_json), Json(match_timeline_json)))
+                
                 self.conn.commit()
                 return match_json, match_timeline_json
 
         except Exception as e:
-            print(f"Error querying the database: {e}")
-            return None
+            raise DatabaseQueryError(f"Error querying the database: {e}")
