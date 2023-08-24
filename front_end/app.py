@@ -15,7 +15,7 @@ def index():
 @app.route('/summoner', methods=['POST'])
 def lookup():
     summoner_name = request.form['summoner_name'].strip()
-    
+   
     try:
         # Check the database first for the puuid
         puuid = record_handler.check_db_for_summoner_name(summoner_name)
@@ -30,6 +30,23 @@ def lookup():
     except (DatabaseConnectionError, DatabaseQueryError) as e:
         app.logger.error(f"Error occurred: {e}")
         return "An error occurred while processing your request. Please try again later.", 500
+
+def extract_data_from_match(match_data):
+    metadata = match_data['metadata']
+    info = match_data['info']
+    match_id = metadata['matchId']
+    game_duration = info['gameDuration']
+
+    included_fields = pd.read_csv('/home/nolan/projects/LoL_data_pipeline/included_match_fields.csv')
+    included_fields_list = included_fields.iloc[:, 0].tolist()    
+    
+    data = pd.DataFrame(info['participants'])[included_fields_list]
+    # data.insert(0, 'PUUid', metadata['participants'])
+    # data.insert(0, 'match_id', match_id)
+    
+    return data    
+
+# data for match details table
 
 def get_match(match_id):
     try:

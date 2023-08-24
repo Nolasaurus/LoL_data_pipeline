@@ -26,17 +26,11 @@ class API_client:
         if response and isinstance(response, str):
             return json.loads(response)
         return response
-
-    def get_match_ids_by_puuid(self, puu_id, start=0, count=20):
+   
+    def get_matches_by_puuid(self, puu_id, start=0, count=20):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puu_id}/ids?start={start}&count={count}&api_key={self.api_key}'
-        return self._make_request(url)
-
-    def get_match_timeline(self, match_id):
-        url = f'https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline?api_key={self.api_key}'
-        response = self._make_request(url, timeout=5)
-        if response and isinstance(response, str):
-            return json.loads(response)
-        return response
+        # return value: List[string]
+        return self._make_request(url, timeout=5)
 
     def get_puuid_by_name(self, summoner_name):
         summoner_name_encoded = summoner_name.strip().replace(" ", "%20") # Remove leading/trailing whitespaces and encode space character
@@ -57,4 +51,3 @@ class API_client:
             return summoner_ids
         else:
             return None
-

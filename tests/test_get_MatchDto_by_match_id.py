@@ -18,7 +18,7 @@ class TestGetMatchByMatchId(unittest.TestCase):
 
         match_id = 'NA1_4729149632'
         client = API_client()
-        result = client.get_match_by_match_id(match_id)
+        result = client.get_MatchDto_by_match_id(match_id)
 
         self.assertEqual(result, expected_match_data)
 
@@ -30,7 +30,7 @@ class TestGetMatchByMatchId(unittest.TestCase):
 
         match_id = 'invalid_match_id'
         client = API_client()
-        result = client.get_match_by_match_id(match_id)
+        result = client.get_MatchDto_by_match_id(match_id)
 
         self.assertEqual(result, None)
 
