@@ -1,4 +1,5 @@
 import requests
+import json
 from src.get_API_key import get_API_key
 
 class API_client:
@@ -21,7 +22,10 @@ class API_client:
 
     def get_match_by_match_id(self, match_id):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}?api_key={self.api_key}'
-        return self._make_request(url, timeout=5)
+        response = self._make_request(url, timeout=5)
+        if response and isinstance(response, str):
+            return json.loads(response)
+        return response
 
     def get_match_ids_by_puuid(self, puu_id, start=0, count=20):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puu_id}/ids?start={start}&count={count}&api_key={self.api_key}'
@@ -29,7 +33,10 @@ class API_client:
 
     def get_match_timeline(self, match_id):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline?api_key={self.api_key}'
-        return self._make_request(url)
+        response = self._make_request(url, timeout=5)
+        if response and isinstance(response, str):
+            return json.loads(response)
+        return response
 
     def get_puuid_by_name(self, summoner_name):
         summoner_name_encoded = summoner_name.strip().replace(" ", "%20") # Remove leading/trailing whitespaces and encode space character
