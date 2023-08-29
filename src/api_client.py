@@ -26,7 +26,7 @@ class API_client:
         response = self._make_request(url, timeout=5)
         return response['puuid'] if response else None
 
-    def get_matches_by_puuid(self, puu_id, start=0, count=20):
+    def get_match_ids_by_puuid(self, puu_id, start=0, count=20):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puu_id}/ids?start={start}&count={count}&api_key={self.api_key}'
         return self._make_request(url, timeout=5)
 
