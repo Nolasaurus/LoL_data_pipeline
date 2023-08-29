@@ -10,13 +10,12 @@ PASSED=0
 FAILED=0
 
 function run_test {
-    echo -e "Running $1..."
     python -m unittest $1
     if [ $? -eq 0 ]; then
-        echo -e "${GREEN}PASSED${NC}"
+        echo -e "${GREEN}$1 PASSED${NC}"
         ((PASSED++))
     else
-        echo -e "${RED}FAILED${NC}"
+        echo -e "${RED}$1 FAILED${NC}"
         ((FAILED++))
     fi
 }

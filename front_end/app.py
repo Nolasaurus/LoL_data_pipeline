@@ -1,12 +1,7 @@
 from flask import Flask, render_template, request
-from src.api_client import API_client
-<<<<<<< HEAD
-from src.extract_data_from_match import extract_data_from_match
-from src.record_handler import RecordHandler, DatabaseConnectionError, DatabaseQueryError  # Import custom exceptions
-from src.connect_db import connect_db
-=======
+from src.api_client import API_client, APIKeyExpiredError
+from src.record_handler import RecordHandler
 import pandas as pd
->>>>>>> c8b4acf (rename to match official API)
 
 app = Flask(__name__, static_url_path='', static_folder='static')
 api_client = API_client()
@@ -31,9 +26,12 @@ def lookup():
             return render_template('summoner.html', summoner_name=summoner_name, matches=matches_data)
         else:
             return "Summoner name not found or an error occurred", 400
-    except (DatabaseConnectionError, DatabaseQueryError) as e:
+    except APIKeyExpiredError:
+        return "API key expired", 403
+    except Exception as e:
         app.logger.error(f"Error occurred: {e}")
         return "An error occurred while processing your request. Please try again later.", 500
+
 
 def extract_data_from_match(match_data):
     metadata = match_data['metadata']
@@ -50,36 +48,20 @@ def extract_data_from_match(match_data):
     
     return data    
 
-# data for match details table
-
 def get_match(match_id):
-<<<<<<< HEAD
-    try:
-        # Check the database first for match details
-        match_details_json, match_timeline_json = record_handler.check_db_for_match(match_id)
-=======
     match_details_json = API_client().get_match_by_match_id(match_id)
     match_details_df = extract_data_from_match(match_details_json)
     # Convert df to list of dicts
     match_details = match_details_df.to_dict(orient='records')  
->>>>>>> c8b4acf (rename to match official API)
 
-        match_details_df = extract_data_from_match(match_details_json)
-        match_details = match_details_df.to_dict(orient='records')  # Convert DataFrame to list of dictionaries
+    match_details_df = extract_data_from_match(match_details_json)
+    match_details = match_details_df.to_dict(orient='records')  # Convert DataFrame to list of dictionaries
 
-        return {
-            "match_id": match_id,
-            "details": match_details,
-            "columns": match_details_df.columns.tolist()
-        }
-    except (DatabaseConnectionError, DatabaseQueryError) as e:
-        app.logger.error(f"Error occurred: {e}")
-        return {
-            "match_id": match_id,
-            "details": [],
-            "columns": []
-        }
-
+    return {
+        "match_id": match_id,
+        "details": match_details,
+        "columns": match_details_df.columns.tolist()
+    }
 def extract_events_from_timeline(match_timeline):
     game_event_df = pd.DataFrame()
     # TODO implement pFrames
