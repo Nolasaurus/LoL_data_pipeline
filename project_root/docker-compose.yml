@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_USER: nolan
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: loldb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  flask:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    environment:
+      FLASK_APP: app.py
+      FLASK_RUN_HOST: 0.0.0.0
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+
+  mage-ai:
+    build:
+      context: ./mage-ai
+      dockerfile: Dockerfile
+    ports:
+      - "6789:6789"
+    volumes:
+      - ./mage-ai:/home/src
+
+volumes:
+  pgdata:

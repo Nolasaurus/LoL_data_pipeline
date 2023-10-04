@@ -1,5 +1,5 @@
 from src.connect_db import connect_db
-from src.api_client import API_client
+from docker.backend.api_client import API_client
 from psycopg2.extras import Json
 
 # Define custom exceptions

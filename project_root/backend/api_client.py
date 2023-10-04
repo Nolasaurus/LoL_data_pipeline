@@ -1,13 +1,13 @@
+import os
 import requests
-import json
-from src.get_API_key import get_API_key
 
 class APIKeyExpiredError(Exception):
     pass
 
-class API_client:
+
+class API_Client:
     def __init__(self):
-        self.api_key = get_API_key()
+        self.api_key = os.environ.get('RIOT_API_KEY')        
    
     def _make_request(self, url, timeout=None):
         # Common code to make an HTTP request to the API
@@ -39,15 +39,16 @@ class API_client:
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}?api_key={self.api_key}'
         response = self._make_request(url, timeout=5)
         if response:
-            self.store_to_s3(f"matches/{match_id}.json", response)
-            return response
+            endpoint = 'http://localhost:6789/api/pipeline_schedules/2/pipeline_runs/4df48ebbba94456eb4209e0d1bbef064'
+            post_response = requests.post(endpoint, json=response, timeout=5)
     
     def get_match_timeline(self, match_id):
         url = f'https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline?api_key={self.api_key}'
         response = self._make_request(url, timeout=5)
         if response:
-            self.store_to_s3(f"match_timelines/{match_id}.json", response)
-            return response
+            # make POST request to this endpoint
+            endpoint = 'http://localhost:6789/api/pipeline_schedules/1/pipeline_runs/15d312a470f545ea8592e8848b4d08dc'
+            post_response = requests.post(endpoint, json=response, timeout=5)
 
     def get_puuid_by_summon_id(self, summoner_id):
         url = f'https://na1.api.riotgames.com/lol/summoner/v4/summoners/{summoner_id}?api_key={self.api_key}'
@@ -62,4 +63,3 @@ class API_client:
             return summoner_ids
         else:
             return None
-

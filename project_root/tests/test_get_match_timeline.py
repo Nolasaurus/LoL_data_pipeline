@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
 import json
-from src.api_client import API_client
+from docker.backend.api_client import API_client
 
 class TestGetMatchTimeline(unittest.TestCase):
 

@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch
-from src.api_client import API_client
+from docker.backend.api_client import API_client
 
 class TestGetPuuidByName(unittest.TestCase):
 
