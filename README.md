@@ -1,6 +1,6 @@
-# LoL_data_pipeline
+# LoL data pipeline
 
-Enables Basic API functionality
-Extracts match timeline data
-Uploads 3NF data to PostgreSQL
-Presents resulting match data with flask frontend
+1. Enables Basic API functionality
+2. Extracts match timeline data
+3. Uploads 3NF data to PostgreSQL
+4. Presents resulting match data with flask frontend
