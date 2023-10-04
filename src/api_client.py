@@ -1,6 +1,5 @@
 import requests
 import json
-import boto3
 from src.get_API_key import get_API_key
 
 class APIKeyExpiredError(Exception):
@@ -9,36 +8,7 @@ class APIKeyExpiredError(Exception):
 class API_client:
     def __init__(self):
         self.api_key = get_API_key()
-        self.s3_client = None  # Initialize the s3_client attribute as None
-        self.bucket_name = 'lol-api-bucket'
-        self.role_arn = 'arn:aws:iam::626950961975:role/lol-s3'
-
-    def store_to_s3(self, filename, data):
-        sts_client = boto3.client('sts')  # Initialize the STS client
-        assumed_role = sts_client.assume_role(
-            RoleArn=self.role_arn,
-            RoleSessionName='S3UploadSession'
-        )
-        credentials = assumed_role['Credentials']
-        
-        # Initialize the S3 client with the temporary credentials
-        self.s3_client = boto3.client(
-            's3',
-            aws_access_key_id=credentials['AccessKeyId'],
-            aws_secret_access_key=credentials['SecretAccessKey'],
-            aws_session_token=credentials['SessionToken']
-        )
-
-        try:
-            self.s3_client.put_object(
-                Bucket=self.bucket_name,
-                Key=filename,
-                Body=json.dumps(data),
-                ContentType='application/json'
-            )
-        except Exception as e:
-            print(f"Error uploading to S3: {e}")
-    
+   
     def _make_request(self, url, timeout=None):
         # Common code to make an HTTP request to the API
         try:
