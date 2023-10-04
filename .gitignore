@@ -3,3 +3,6 @@ __pycache__
 .conda
 postgres_pw.txt
 eda/
+example_frontend/
+flowcharts/
+API_data/
