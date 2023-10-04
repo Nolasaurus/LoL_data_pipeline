@@ -6,3 +6,5 @@ eda/
 example_frontend/
 flowcharts/
 API_data/
+.venv/
+.env
