@@ -7,4 +7,4 @@ flowcharts/
 API_data/
 .venv/
 .env
-mage-ai/mage_data/lol_data_pipeline/.cache/
+project_root/mage-ai/mage_data/lol_data_pipeline/.cache/
