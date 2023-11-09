@@ -1,5 +1,5 @@
-from src.connect_db import connect_db
-from docker.backend.api_client import API_client
+from backend.src.connect_db import connect_db
+from backend.src.api_client import API_Client
 from psycopg2.extras import Json
 
 # Define custom exceptions
@@ -13,7 +13,7 @@ class RecordHandler:
     def __init__(self):
         # Ensure the database is available
         self.conn = self._connect_to_db()
-        self.api_client = API_client()  # Create an instance of the API_client class
+        self.api_client = API_Client()  # Create an instance of the API_client class
 
     def _connect_to_db(self):
         try:

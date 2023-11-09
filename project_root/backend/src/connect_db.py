@@ -5,7 +5,7 @@ def connect_db():
         password = file.read().strip()
     return psycopg2.connect(
         dbname="loldb",
-        user="postgres",
+        user="nolan",
         password=password,
         host="localhost",
         port="5432"

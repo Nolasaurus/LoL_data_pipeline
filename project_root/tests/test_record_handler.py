@@ -1,6 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
-from src.record_handler import RecordHandler
+from backend.src.record_handler import RecordHandler
+from backend.src.api_client import API_Client
 import json
 
 class TestRecordHandler(unittest.TestCase):
@@ -8,9 +9,9 @@ class TestRecordHandler(unittest.TestCase):
     def setUp(self):
         self.record_handler = RecordHandler()
 
-    @patch('src.connect_db.connect_db')
+    @patch('backend.src.connect_db.connect_db')
     @patch.object(RecordHandler, '_connect_to_db')
-    @patch('src.api_client.API_client.get_puuid_by_name')
+    @patch('backend.src.api_client.API_Client.get_puuid_by_name')
     def test_check_db_for_summoner_name(self, mock_get_puuid_by_name, mock_connect, mock_db):
         mock_cursor = mock_db.cursor.return_value
 
@@ -29,7 +30,7 @@ class TestRecordHandler(unittest.TestCase):
         self.assertEqual(result, valid_puuid)
 
 
-    @patch('src.connect_db.connect_db')
+    @patch('backend.src.connect_db.connect_db')
     @patch.object(RecordHandler, '_connect_to_db')
     def test_check_db_for_match_ids(self, mock_connect, mock_db):
         valid_match_ids_list = [
@@ -62,17 +63,16 @@ class TestRecordHandler(unittest.TestCase):
         result = self.record_handler.check_db_for_match_ids(valid_puuid)
         self.assertEqual(result, valid_match_ids_list)
 
-    @patch('src.connect_db.connect_db')
+    @patch('backend.src.connect_db.connect_db')
     @patch.object(RecordHandler, '_connect_to_db')
-    @patch('src.api_client.API_client.get_match_by_match_id')
-    @patch('src.api_client.API_client.get_match_timeline')
+    @patch('backend.src.api_client.API_Client.get_match_by_match_id')
+    @patch('backend.src.api_client.API_Client.get_match_timeline')
     def test_check_db_for_match(self, mock_get_match_timeline, mock_get_match_by_match_id, mock_connect, mock_db):
-        test_match_id = 'NA1_3720451304'
-        
+        test_match_id = 'NA1_4729149632'
         # Load the mock data from files
-        with open(f'/home/nolan/projects/LoL_data_pipeline/API_data/match_timelines/{test_match_id}.json', 'r') as file:
+        with open(f'tests/files/{test_match_id}_match_timeline.json', 'r') as file:
             valid_timeline_json = json.load(file)
-        with open(f'/home/nolan/projects/LoL_data_pipeline/API_data/matches/{test_match_id}.json', 'r') as file:
+        with open(f'tests/files/{test_match_id}_match_data.json', 'r') as file:
             valid_match_json = json.load(file)
         
         mock_get_match_by_match_id.return_value = valid_match_json
