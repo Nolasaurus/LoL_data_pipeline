@@ -1,6 +1,5 @@
 API-key.txt
 __pycache__
-.conda
 postgres_pw.txt
 eda/
 example_frontend/
@@ -8,3 +7,4 @@ flowcharts/
 API_data/
 .venv/
 .env
+mage-ai/mage_data/lol_data_pipeline/.cache/
