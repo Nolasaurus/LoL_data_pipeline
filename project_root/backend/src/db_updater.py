@@ -1,4 +1,5 @@
-from src.connect_db import connect_db
+from connect_db import connect_db
+from api_client import API_Client
 
 class DatabaseUpdater:
     def __init__(self, connection_params):
