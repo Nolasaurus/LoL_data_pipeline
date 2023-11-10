@@ -5,8 +5,9 @@ import webbrowser
 import subprocess
 import sys
 
-load_dotenv()
 
+class RateLimitExceededError(Exception):
+    pass
 
 class APIKeyExpiredError(Exception):
     def __init__(self, message="API key has expired"):
@@ -27,6 +28,7 @@ class APIKeyExpiredError(Exception):
 
 class API_Client:
     def __init__(self):
+        load_dotenv()
         self.api_key = os.environ.get("RIOT_API_KEY")
 
     def _make_request(self, url, timeout=None):
@@ -38,6 +40,8 @@ class API_Client:
                 return response.json()
             elif response.status_code == 403:
                 raise APIKeyExpiredError("Riot API key expired")
+            elif response.status_code == 429:
+                raise RateLimitExceededError("Too many API calls recently")
             else:
                 print(f"Error: {response.status_code}")
                 return None

@@ -1,12 +1,13 @@
+import os
 import psycopg2
+from dotenv import load_dotenv
 
 def connect_db():
-    with open('/home/nolan/projects/LoL_data_pipeline/postgres_pw.txt', 'r') as file:
-        password = file.read().strip()
+    load_dotenv()
     return psycopg2.connect(
         dbname="loldb",
         user="nolan",
-        password=password,
+        password= os.environ.get("POSTGRES_PASSWORD"),
         host="localhost",
         port="5432"
     )
