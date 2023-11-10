@@ -1,10 +1,10 @@
 from flask import Flask, render_template, request
-from docker.backend.api_client import API_client, APIKeyExpiredError
-from src.record_handler import RecordHandler
+from backend.src.api_client import API_Client, APIKeyExpiredError
+from backend.src.record_handler import RecordHandler
 import pandas as pd
 
 app = Flask(__name__, static_url_path='', static_folder='static')
-api_client = API_client()
+api_client = API_Client()
 record_handler = RecordHandler()  # Create an instance of the RecordHandler class
 
 @app.route('/')
@@ -14,11 +14,11 @@ def index():
 @app.route('/summoner', methods=['POST'])
 def lookup():
     summoner_name = request.form['summoner_name'].strip()
-    
+
     try:
         # Check the database first for the puuid
         puuid = record_handler.check_db_for_summoner_name(summoner_name)
-        
+
         if puuid:
             # Check the database for match_ids associated with the puuid
             match_ids = record_handler.check_db_for_match_ids(puuid)
@@ -49,7 +49,7 @@ def extract_data_from_match(match_data):
     return data    
 
 def get_match(match_id):
-    match_details_json = API_client().get_match_by_match_id(match_id)
+    match_details_json = API_Client().get_match_by_match_id(match_id)
     match_details_df = extract_data_from_match(match_details_json)
     # Convert df to list of dicts
     match_details = match_details_df.to_dict(orient='records')  
@@ -68,7 +68,7 @@ def extract_events_from_timeline(match_timeline):
     # game_pFrames_df = pd.DataFrame()
     for i, frame in enumerate(match_timeline['info']['frames']):
         events = pd.DataFrame(match_timeline['info']['frames'][i]['events'])
-        # TODO 
+        # TODO
         # pFrames = pd.DataFrame(match_timeline['info']['frames'][i]['participantFrames'])
 
         # concat events to game_event_df

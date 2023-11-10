@@ -2,7 +2,6 @@ import pandas as pd
 import psycopg2.extras
 from src.connect_db import connect_db
 
-
 class DataProcessor:
     @staticmethod
     def check_if_data_in_db(table_name, data_df, unique_columns):
@@ -40,7 +39,7 @@ class DataProcessor:
 
             # Check if the columns match
             if db_columns != df_columns:
-                print("Columns in DataFrame do not match columns in database table. Operation aborted.")
+                print("Columns in df do not match cols in db table. Aborted.")
                 return
 
             values = [tuple(row) for row in data_df.values]
@@ -63,7 +62,6 @@ class DataProcessor:
         participant_match_details = raw_match_json['info']['participants']
         participant_match_details_df = pd.DataFrame(participant_match_details)
         table_name = 'player_match_stats'
-        
         DataProcessor.add_rows_to_table(table_name, participant_match_details_df)
 
     # @staticmethod
@@ -72,6 +70,5 @@ class DataProcessor:
     #     timeline_details_df = # Code to create DataFrame from raw_match_timeline_json
 
     #     table_name = 'match_timeline'
-        
     #     # Use the add_rows_to_table function to insert the data
     #     DataProcessor.add_rows_to_table(table_name, timeline_details_df)
