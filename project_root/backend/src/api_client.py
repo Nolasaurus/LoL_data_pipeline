@@ -1,8 +1,11 @@
 import os
+from dotenv import load_dotenv
 import requests
 import webbrowser
 import subprocess
 import sys
+
+load_dotenv()
 
 
 class APIKeyExpiredError(Exception):
