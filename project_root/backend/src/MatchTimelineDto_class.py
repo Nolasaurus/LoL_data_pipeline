@@ -1,5 +1,6 @@
 import json
 import sys
+import pandas as pd
 
 class Metadata:
     def __init__(self, dataVersion, matchId, participants):
@@ -51,6 +52,26 @@ class MatchTimelineDto:
         self.metadata = Metadata(**metadata)
         self.info = Info(**info)
 
+    def get_gold_by_participant(self):
+        # Initialize an empty list to store the data
+        gold_data = []
+
+        # Iterate over each frame
+        for frame in self.info.frames:
+            timestamp = frame.timestamp
+            # Iterate over each participant frame within a frame
+            for participant_id, participant_frame in frame.participantFrames.items():
+                # Extract the total gold for the participant in this frame
+                total_gold = participant_frame.totalGold
+
+                # Append the data to our list
+                gold_data.append([timestamp, participant_id, total_gold])
+
+        # Convert the list to a DataFrame
+        gold_df = pd.DataFrame(gold_data, columns=["frame", "participant_id", "totalGold"])
+
+        return gold_df
+
 def to_dict(obj):
     """
     Helper function to recursively convert an object to a dictionary.
@@ -65,16 +86,17 @@ def to_dict(obj):
         return obj
     
 
+def create_MatchTimelineDto_instance(timeline_json):
+    return MatchTimelineDto(timeline_json['metadata'], timeline_json['info'])
+
+
 def main():
     if len(sys.argv) == 2:
         file_path = sys.argv[1]
         try:
             with open(file_path, 'r') as file:
                 timeline_data = json.load(file)
-                timeline_dto_instance = MatchTimelineDto(timeline_data['metadata'], timeline_data['info'])
-                print("Match Timeline DTO created successfully.")
-                # Convert to dictionary for better readability
-                print(json.dumps(to_dict(timeline_dto_instance), indent=4))
+                return MatchTimelineDto(timeline_data['metadata'], timeline_data['info'])
         except FileNotFoundError:
             print(f"Error: File not found - {file_path}")
         except json.JSONDecodeError:
