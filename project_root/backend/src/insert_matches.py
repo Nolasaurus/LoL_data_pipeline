@@ -45,8 +45,7 @@ def get_and_insert_match(match_id):
 
     except Exception as e:
         print(f"An error occurred while processing match_id {match_id}: {e}")
-
-
+        
 
 def main():
     create_table()

@@ -1,6 +1,6 @@
 import pandas as pd
 import psycopg2.extras
-from src.connect_db import connect_db
+from connect_db import connect_db
 
 class DataProcessor:
     @staticmethod
