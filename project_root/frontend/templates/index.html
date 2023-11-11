@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League of Legends Summoner Lookup</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <h1 style="text-align:center; font-weight:bold;">League of Legends Summoner lookup</h1>
+    <form action="/summoner" method="post" style="text-align:center;">
+        <input type="text" name="summoner_name" placeholder="Enter Summoner name">
+        <input type="submit" value="Lookup">
+    </form>
+</body>
+</html>
