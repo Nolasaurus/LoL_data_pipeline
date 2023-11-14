@@ -8,15 +8,18 @@ class Metadata:
         self.matchId = matchId
         self.participants = participants
 
+
 class ChampionStats:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
 
+
 class DamageStats:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             setattr(self, key, value)
+
 
 class ParticipantFrame:
     def __init__(self, **kwargs):
@@ -28,6 +31,7 @@ class ParticipantFrame:
         self.xp = kwargs.get('xp', 0)
         # Add more properties as needed
 
+
 class Event:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -38,6 +42,7 @@ class Frame:
         self.events = [Event(**event) for event in events]
         self.participantFrames = {k: ParticipantFrame(**v) for k, v in participantFrames.items()}
         self.timestamp = timestamp
+
 
 class Info:
     def __init__(self, frameInterval, frames, gameId, participants):
@@ -56,7 +61,6 @@ class MatchTimelineDto:
         # Initialize an empty list to store the data
         gold_data = []
 
-        # Iterate over each frame
         for frame in self.info.frames:
             timestamp = frame.timestamp
             # Iterate over each participant frame within a frame
@@ -72,39 +76,25 @@ class MatchTimelineDto:
 
         return gold_df
 
-def to_dict(obj):
-    """
-    Helper function to recursively convert an object to a dictionary.
-    """
-    if isinstance(obj, list):
-        return [to_dict(e) for e in obj]
-    elif isinstance(obj, dict):
-        return {k: to_dict(v) for k, v in obj.items()}
-    elif hasattr(obj, "__dict__"):
-        return {k: to_dict(v) for k, v in obj.__dict__.items()}
-    else:
-        return obj
-    
 
-def create_MatchTimelineDto_instance(timeline_json):
-    return MatchTimelineDto(timeline_json['metadata'], timeline_json['info'])
+    def get_events_by_frame(self):
+        event_data = []
 
+        # Iterate over each frame
+        for frame in self.info.frames:
+            # Iterate over each event within a frame
+            for event in frame.events:
+                # Dictionary to hold event details
+                event_details = {}
 
-def main():
-    if len(sys.argv) == 2:
-        file_path = sys.argv[1]
-        try:
-            with open(file_path, 'r') as file:
-                timeline_data = json.load(file)
-                return MatchTimelineDto(timeline_data['metadata'], timeline_data['info'])
-        except FileNotFoundError:
-            print(f"Error: File not found - {file_path}")
-        except json.JSONDecodeError:
-            print("Error: Invalid JSON file")
-        except Exception as e:
-            print(f"An error occurred: {e}")
-    else:
-        print("Usage: python script.py <path_to_match_timeline_json_file>")
+                # Dynamically add all properties of the event to the dictionary
+                for key, value in event.__dict__.items():
+                    event_details[key] = value
 
-if __name__ == "__main__":
-    main()
+                # Append the event details to the event_data list
+                event_data.append(event_details)
+
+        # Convert the list of event details to a DataFrame
+        event_df = pd.DataFrame(event_data)
+
+        return event_df
