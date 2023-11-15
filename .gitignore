@@ -6,3 +6,4 @@ API_data/
 .venv/
 .env
 project_root/mage-ai/mage_data/lol_data_pipeline/.cache/
+testing_grounds/

@@ -1,21 +1,41 @@
-from flask import Flask, render_template, request
+import traceback
+import streamlit as st
+from backend.src import MatchOverclass, SummonerDto, api_client
 
-app = Flask(__name__, static_url_path='', static_folder='static')
+client = api_client.API_Client()
 
-@app.route('/')
-def index():
-    return render_template('index.html')
+def main():
+    st.title("League of Legends Summoner Lookup")
+    summoner_name = st.text_input("Enter summoner name", placeholder="Enter summoner name")
 
-@app.route('/summoner', methods=['POST'])
-def lookup():
-    summoner_name = request.form['summoner_name'].strip()
-    summoner_data = get_summoner_data(summoner_name)
+    if summoner_name:
+        try:
+            summoner_dto = SummonerDto.SummonerDto.get_summoner_dto(summoner_name)
+            summoner_puuid = summoner_dto.puuid
+        except Exception as e:
+            st.error(f"Error fetching summoner data: {e}")
+            return
+
+        try:
+            match_ids = client.get_match_ids_by_puuid(summoner_puuid)
+            most_recent_match_id = match_ids[0]
+        except Exception as e:
+            st.error(f"Error fetching match IDs: {e}")
+            return
+
+        try:
+            combined_match_data = MatchOverclass.MatchOverclass(most_recent_match_id)
+            fig = combined_match_data.plot_gold_by_frame()
+            st.pyplot(fig)
+        except ValueError as ve:
+            st.error(f"Value error occurred: {ve}")
+        except TypeError as te:
+            st.error(f"Type error occurred: {te}")
+        except Exception as e:
+            st.error(f"Unexpected error occurred: {e}")
+            traceback_details = traceback.format_exc()
+            st.error(f"Full traceback: {traceback_details}")
 
 
-def get_summoner_data(summoner_name):
-    # connect to psql docker
-    # 
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
+if __name__ == "__main__":
+    main()
