@@ -156,11 +156,4 @@ class MatchDto:
         self.match_id = self.metadata.matchId
         self.info = InfoDto(json['info'])
 
-    @staticmethod
-    def get_match_dto(match_id):
-        api_client = API_Client()
-        match_data = api_client.get_match_by_match_id(match_id=match_id)
-        return MatchDto(match_data.json())
-
-
 

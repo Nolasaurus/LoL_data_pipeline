@@ -1,7 +1,3 @@
-import pandas as pd
-from .api_client import API_Client
-import json
-
 class Metadata:
     def __init__(self, metadata_json):
         self.dataVersion = metadata_json['dataVersion']
@@ -55,52 +51,5 @@ class MatchTimelineDto:
     def __init__(self, timeline_json):
         self.metadata = Metadata(timeline_json['metadata'])
         self.info = Info(timeline_json['info'])
+        self.participants = self.metadata.participants
 
-
-    def get_gold_by_participant(self):
-        # Initialize an empty list to store the data
-        gold_data = []
-
-        for frame in self.info.frames:
-            timestamp = frame.timestamp
-            # Iterate over each participant frame within a frame
-            for participant_id, participant_frame in frame.participantFrames.items():
-                # Extract the total gold for the participant in this frame
-                total_gold = participant_frame.totalGold
-
-                # Append the data to our list
-                gold_data.append([timestamp, participant_id, total_gold])
-
-        # Convert the list to a DataFrame
-        gold_df = pd.DataFrame(gold_data, columns=["frame", "participant_id", "totalGold"])
-
-        return gold_df
-
-
-    def get_events_by_frame(self):
-        event_data = []
-
-        # Iterate over each frame
-        for frame in self.info.frames:
-            # Iterate over each event within a frame
-            for event in frame.events:
-                # Dictionary to hold event details
-                event_details = {}
-
-                # Dynamically add all properties of the event to the dictionary
-                for key, value in event.__dict__.items():
-                    event_details[key] = value
-
-                # Append the event details to the event_data list
-                event_data.append(event_details)
-
-        # Convert the list of event details to a DataFrame
-        event_df = pd.DataFrame(event_data)
-
-        return event_df
-    
-    @staticmethod
-    def get_match_timeline_dto(match_id):
-        api_client = API_Client()
-        match_timeline = api_client.get_match_timeline(match_id=match_id)
-        return MatchTimelineDto(match_timeline.json())
