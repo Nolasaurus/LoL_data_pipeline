@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt
 from backend.src.MatchDto import MatchDto
 from backend.src.MatchTimelineDto import MatchTimelineDto
-import pandas as pd
 from .api_client import API_Client
 
 class MatchOverclass:
@@ -23,6 +22,25 @@ class MatchOverclass:
         self.match_timeline = self.get_match_timeline_dto(match_id)
         self.match_id = self.match_data.metadata.matchId
         self.puuid_dict = {participant.puuid: participant.summonerName for participant in self.match_data.info.participants}
+
+    def extract_match_summary(self):
+        # extract from match_data game start, game duration, game type, teams, winning team
+        game_start = self.match_data.info.gameStartTimestamp
+        UTC_game_start = None # convert game_start to UTC
+
+        game_duration = self.match_data.info.gameDuration
+        game_len_hh_mm_ss = None # convert game_duration to hours, minutes, seconds
+        # extract from match_timeline
+        match_summary_df = None
+
+        player_data = self.extract_player_data()
+        # get KDA for each participant, gold and level, champion, total damage to champions
+        return match_summary_df
+    
+    def extract_player_data(self):
+        # convert match_data.info.participants to a df. Challenges and perks should each be their own df
+        ...
+
 
     def get_gold_by_summoner_name(self):
         # Initialize an empty list to store the data
