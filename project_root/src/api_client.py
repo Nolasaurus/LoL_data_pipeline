@@ -2,30 +2,63 @@ import os
 from dotenv import load_dotenv
 import requests
 import logging
-import logging
+import time
 
-logging.basicConfig(filename='app.log', level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(
+    filename="app.log",
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+
 
 class RateLimitExceededError(Exception):
     pass
+
 
 class APIKeyExpiredError(Exception):
     def __init__(self, message="API key has expired"):
         super().__init__(message)
 
 
+class RateLimiter:
+    def __init__(self, max_requests, period):
+        self.max_requests = max_requests
+        self.period = period
+        self.timestamps = []
+
+    def __call__(self):
+        now = time.time()
+        self.timestamps = [ts for ts in self.timestamps if ts > now - self.period]
+
+        if len(self.timestamps) < self.max_requests:
+            self.timestamps.append(now)
+        else:
+            oldest_request = min(self.timestamps)
+            time_to_wait = self.period - (now - oldest_request)
+            time.sleep(time_to_wait)
+            self.timestamps.append(time.time())
+
+
+rl_sec = RateLimiter(20, 1)  # 20 requests per 1 second
+rl_min = RateLimiter(100, 120)  # 100 requests per 2 minutes
+
+
 class API_Client:
     def __init__(self):
-        load_dotenv('./.env', verbose=True) 
+        load_dotenv("./.env", verbose=True)
         self.api_key = os.environ.get("RIOT_API_KEY")
         if not self.api_key:
             logging.error("API key is not set in environment variables")
             raise Exception("API key is not set in environment variables")
-        logging.info(f"API key loaded: {self.api_key}")
-
+        logging.info("API key loaded")
 
     def _make_request(self, url, timeout=None):
-        logging.debug(f"Making request to URL: {url} with API key: {self.api_key}")
+        logging.debug(f"Making request to URL: {url}")
+
+        # Enforce rate limiting before making a request
+        rl_sec()
+        rl_min()
+
         # Common code to make an HTTP request to the API
         try:
             response = requests.get(url, timeout=timeout)
@@ -34,9 +67,11 @@ class API_Client:
                 return response.json()
             elif response.status_code == 403:
                 print(response)
-                raise APIKeyExpiredError("403: No Riot API key or key expired")
+                raise APIKeyExpiredError("403: Riot API key expired")
             elif response.status_code == 429:
-                raise RateLimitExceededError("429: Rate limited. Too many API calls recently")
+                raise RateLimitExceededError(
+                    "429: Rate limited. Too many API calls recently"
+                )
             else:
                 print(f"Error: {response.status_code}")
                 return None
