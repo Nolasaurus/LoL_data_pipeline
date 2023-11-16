@@ -1,5 +1,5 @@
-from backend.src.connect_db import connect_db
-from backend.src.api_client import API_Client
+from connect_db import connect_db
+from api_client import API_Client
 from psycopg2.extras import Json
 
 # Define custom exceptions

@@ -1,5 +1,4 @@
-from .api_client import API_Client
-import json
+from api_client import API_Client
 
 '''
 Class and Sub-Class Structure:

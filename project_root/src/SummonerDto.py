@@ -1,4 +1,4 @@
-from .api_client import API_Client
+from api_client import API_Client
 
 class SummonerDto:
     def __init__(self, json):
