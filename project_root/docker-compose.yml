@@ -9,12 +9,20 @@ services:
       POSTGRES_DB: loldb
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8501 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
 
   python-app:
     build: .  # Set the build context to the project root
     environment:
+      env_file: .env
       POSTGRES_USER: nolan
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      RIOT_API_KEY: ${RIOT_API_KEY}
       POSTGRES_DB: loldb
       POSTGRES_HOST: postgres
     ports:

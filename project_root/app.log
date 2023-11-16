@@ -1,0 +1,128 @@
+2023-11-16 15:37:54,519 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/MatchTimelineDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.cpython-310.pyc'>
+2023-11-16 15:37:54,520 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/SummonerDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='SummonerDto.cpython-310.pyc'>
+2023-11-16 15:37:54,521 - ERROR - API key is not set in environment variables
+2023-11-16 15:37:54,521 - ERROR - API key is not set in environment variables
+2023-11-16 15:37:54,521 - INFO - API key loaded: None
+2023-11-16 15:37:54,521 - INFO - API key loaded: None
+2023-11-16 15:37:54,671 - DEBUG - in-event <InotifyEvent: src_path=b'/app/api_client.py', wd=1, mask=IN_OPEN, cookie=0, name='api_client.py'>
+2023-11-16 15:37:54,672 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchDto.py'>
+2023-11-16 15:37:54,672 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchTimelineDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.py'>
+2023-11-16 15:37:54,673 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchOverclass.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchOverclass.py'>
+2023-11-16 15:37:54,674 - DEBUG - in-event <InotifyEvent: src_path=b'/app/SummonerDto.py', wd=1, mask=IN_OPEN, cookie=0, name='SummonerDto.py'>
+2023-11-16 15:37:54,714 - DEBUG - in-event <InotifyEvent: src_path=b'/app/app.py', wd=1, mask=IN_OPEN, cookie=0, name='app.py'>
+2023-11-16 15:39:35,301 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/MatchTimelineDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.cpython-310.pyc'>
+2023-11-16 15:39:35,301 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/SummonerDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='SummonerDto.cpython-310.pyc'>
+2023-11-16 15:39:35,302 - ERROR - API key is not set in environment variables
+2023-11-16 15:39:35,302 - INFO - API key loaded: None
+2023-11-16 15:39:35,341 - DEBUG - in-event <InotifyEvent: src_path=b'/app/app.py', wd=1, mask=IN_OPEN, cookie=0, name='app.py'>
+2023-11-16 15:39:35,437 - DEBUG - in-event <InotifyEvent: src_path=b'/app/api_client.py', wd=1, mask=IN_OPEN, cookie=0, name='api_client.py'>
+2023-11-16 15:39:35,437 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchDto.py'>
+2023-11-16 15:39:35,438 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchTimelineDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.py'>
+2023-11-16 15:39:35,438 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchOverclass.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchOverclass.py'>
+2023-11-16 15:39:35,438 - DEBUG - in-event <InotifyEvent: src_path=b'/app/SummonerDto.py', wd=1, mask=IN_OPEN, cookie=0, name='SummonerDto.py'>
+2023-11-16 15:39:37,631 - ERROR - API key is not set in environment variables
+2023-11-16 15:39:37,632 - INFO - API key loaded: None
+2023-11-16 15:39:37,633 - ERROR - API key is not set in environment variables
+2023-11-16 15:39:37,633 - INFO - API key loaded: None
+2023-11-16 15:39:37,633 - DEBUG - Making request to URL: https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/The%20Steina?api_key=None with API key: None
+2023-11-16 15:39:37,635 - DEBUG - Starting new HTTPS connection (1): na1.api.riotgames.com:443
+2023-11-16 15:39:37,976 - DEBUG - https://na1.api.riotgames.com:443 "GET /lol/summoner/v4/summoners/by-name/The%20Steina?api_key=None HTTP/1.1" 403 None
+2023-11-16 15:40:24,373 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/MatchTimelineDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.cpython-310.pyc'>
+2023-11-16 15:40:24,374 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/SummonerDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='SummonerDto.cpython-310.pyc'>
+2023-11-16 15:40:24,374 - ERROR - API key is not set in environment variables
+2023-11-16 15:40:24,374 - INFO - API key loaded: None
+2023-11-16 15:40:24,413 - DEBUG - in-event <InotifyEvent: src_path=b'/app/app.py', wd=1, mask=IN_OPEN, cookie=0, name='app.py'>
+2023-11-16 15:40:24,509 - DEBUG - in-event <InotifyEvent: src_path=b'/app/api_client.py', wd=1, mask=IN_OPEN, cookie=0, name='api_client.py'>
+2023-11-16 15:40:24,510 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchDto.py'>
+2023-11-16 15:40:24,510 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchTimelineDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.py'>
+2023-11-16 15:40:24,511 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchOverclass.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchOverclass.py'>
+2023-11-16 15:40:24,511 - DEBUG - in-event <InotifyEvent: src_path=b'/app/SummonerDto.py', wd=1, mask=IN_OPEN, cookie=0, name='SummonerDto.py'>
+2023-11-16 15:40:24,555 - ERROR - API key is not set in environment variables
+2023-11-16 15:40:24,556 - INFO - API key loaded: None
+2023-11-16 15:40:26,159 - ERROR - API key is not set in environment variables
+2023-11-16 15:40:26,159 - INFO - API key loaded: None
+2023-11-16 15:40:29,038 - ERROR - API key is not set in environment variables
+2023-11-16 15:40:29,038 - INFO - API key loaded: None
+2023-11-16 15:40:29,039 - ERROR - API key is not set in environment variables
+2023-11-16 15:40:29,039 - INFO - API key loaded: None
+2023-11-16 15:40:29,039 - DEBUG - Making request to URL: https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/The%20Steina?api_key=None with API key: None
+2023-11-16 15:40:29,041 - DEBUG - Starting new HTTPS connection (1): na1.api.riotgames.com:443
+2023-11-16 15:40:29,331 - DEBUG - https://na1.api.riotgames.com:443 "GET /lol/summoner/v4/summoners/by-name/The%20Steina?api_key=None HTTP/1.1" 403 None
+2023-11-16 15:41:09,091 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/MatchTimelineDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.cpython-310.pyc'>
+2023-11-16 15:41:09,091 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/SummonerDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='SummonerDto.cpython-310.pyc'>
+2023-11-16 15:41:09,092 - ERROR - API key is not set in environment variables
+2023-11-16 15:41:09,092 - INFO - API key loaded: None
+2023-11-16 15:41:09,093 - ERROR - API key is not set in environment variables
+2023-11-16 15:41:09,093 - ERROR - API key is not set in environment variables
+2023-11-16 15:41:09,093 - INFO - API key loaded: None
+2023-11-16 15:41:09,094 - INFO - API key loaded: None
+2023-11-16 15:41:09,141 - ERROR - API key is not set in environment variables
+2023-11-16 15:41:09,141 - INFO - API key loaded: None
+2023-11-16 15:41:09,141 - DEBUG - Making request to URL: https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/The%20Steina?api_key=None with API key: None
+2023-11-16 15:41:09,146 - DEBUG - Starting new HTTPS connection (1): na1.api.riotgames.com:443
+2023-11-16 15:41:09,248 - DEBUG - in-event <InotifyEvent: src_path=b'/app/api_client.py', wd=1, mask=IN_OPEN, cookie=0, name='api_client.py'>
+2023-11-16 15:41:09,249 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchDto.py'>
+2023-11-16 15:41:09,250 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchTimelineDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.py'>
+2023-11-16 15:41:09,250 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchOverclass.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchOverclass.py'>
+2023-11-16 15:41:09,251 - DEBUG - in-event <InotifyEvent: src_path=b'/app/SummonerDto.py', wd=1, mask=IN_OPEN, cookie=0, name='SummonerDto.py'>
+2023-11-16 15:41:09,294 - DEBUG - in-event <InotifyEvent: src_path=b'/app/app.py', wd=1, mask=IN_OPEN, cookie=0, name='app.py'>
+2023-11-16 15:41:09,491 - DEBUG - https://na1.api.riotgames.com:443 "GET /lol/summoner/v4/summoners/by-name/The%20Steina?api_key=None HTTP/1.1" 403 None
+2023-11-16 15:41:15,403 - ERROR - API key is not set in environment variables
+2023-11-16 15:41:15,403 - INFO - API key loaded: None
+2023-11-16 15:41:18,110 - ERROR - API key is not set in environment variables
+2023-11-16 15:41:18,110 - INFO - API key loaded: None
+2023-11-16 15:41:18,111 - ERROR - API key is not set in environment variables
+2023-11-16 15:41:18,111 - INFO - API key loaded: None
+2023-11-16 15:41:18,111 - DEBUG - Making request to URL: https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/The%20Steina?api_key=None with API key: None
+2023-11-16 15:41:18,112 - DEBUG - Starting new HTTPS connection (1): na1.api.riotgames.com:443
+2023-11-16 15:41:18,389 - DEBUG - https://na1.api.riotgames.com:443 "GET /lol/summoner/v4/summoners/by-name/The%20Steina?api_key=None HTTP/1.1" 403 None
+2023-11-16 15:53:56,284 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/MatchTimelineDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.cpython-310.pyc'>
+2023-11-16 15:53:56,285 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/SummonerDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='SummonerDto.cpython-310.pyc'>
+2023-11-16 15:53:56,286 - ERROR - API key is not set in environment variables
+2023-11-16 15:53:56,286 - ERROR - API key is not set in environment variables
+2023-11-16 15:53:56,286 - INFO - API key loaded: None
+2023-11-16 15:53:56,286 - INFO - API key loaded: None
+2023-11-16 15:53:56,446 - DEBUG - in-event <InotifyEvent: src_path=b'/app/api_client.py', wd=1, mask=IN_OPEN, cookie=0, name='api_client.py'>
+2023-11-16 15:53:56,447 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchDto.py'>
+2023-11-16 15:53:56,448 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchTimelineDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.py'>
+2023-11-16 15:53:56,450 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchOverclass.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchOverclass.py'>
+2023-11-16 15:53:56,451 - DEBUG - in-event <InotifyEvent: src_path=b'/app/SummonerDto.py', wd=1, mask=IN_OPEN, cookie=0, name='SummonerDto.py'>
+2023-11-16 15:53:56,501 - DEBUG - in-event <InotifyEvent: src_path=b'/app/app.py', wd=1, mask=IN_OPEN, cookie=0, name='app.py'>
+2023-11-16 15:53:58,884 - ERROR - API key is not set in environment variables
+2023-11-16 15:53:58,884 - INFO - API key loaded: None
+2023-11-16 15:53:58,886 - ERROR - API key is not set in environment variables
+2023-11-16 15:53:58,886 - INFO - API key loaded: None
+2023-11-16 15:53:58,886 - DEBUG - Making request to URL: https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/The%20Steina?api_key=None with API key: None
+2023-11-16 15:53:58,888 - DEBUG - Starting new HTTPS connection (1): na1.api.riotgames.com:443
+2023-11-16 15:53:59,256 - DEBUG - https://na1.api.riotgames.com:443 "GET /lol/summoner/v4/summoners/by-name/The%20Steina?api_key=None HTTP/1.1" 403 None
+2023-11-16 15:55:26,347 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/MatchTimelineDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.cpython-310.pyc'>
+2023-11-16 15:55:26,348 - ERROR - API key is not set in environment variables
+2023-11-16 15:55:26,348 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/SummonerDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='SummonerDto.cpython-310.pyc'>
+2023-11-16 15:55:26,349 - DEBUG - in-event <InotifyEvent: src_path=b'/app/app.py', wd=1, mask=IN_OPEN, cookie=0, name='app.py'>
+2023-11-16 15:55:26,349 - DEBUG - in-event <InotifyEvent: src_path=b'/app/api_client.py', wd=1, mask=IN_OPEN, cookie=0, name='api_client.py'>
+2023-11-16 15:55:26,534 - DEBUG - in-event <InotifyEvent: src_path=b'/app/api_client.py', wd=1, mask=IN_OPEN, cookie=0, name='api_client.py'>
+2023-11-16 15:55:26,534 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchDto.py'>
+2023-11-16 15:55:26,535 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchTimelineDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.py'>
+2023-11-16 15:55:26,535 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchOverclass.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchOverclass.py'>
+2023-11-16 15:55:26,536 - DEBUG - in-event <InotifyEvent: src_path=b'/app/SummonerDto.py', wd=1, mask=IN_OPEN, cookie=0, name='SummonerDto.py'>
+2023-11-16 15:55:33,400 - ERROR - API key is not set in environment variables
+2023-11-16 15:57:25,349 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/MatchTimelineDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.cpython-310.pyc'>
+2023-11-16 15:57:25,349 - ERROR - API key is not set in environment variables
+2023-11-16 15:57:25,350 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/SummonerDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='SummonerDto.cpython-310.pyc'>
+2023-11-16 15:57:25,350 - DEBUG - in-event <InotifyEvent: src_path=b'/app/app.py', wd=1, mask=IN_OPEN, cookie=0, name='app.py'>
+2023-11-16 15:57:25,351 - DEBUG - in-event <InotifyEvent: src_path=b'/app/api_client.py', wd=1, mask=IN_OPEN, cookie=0, name='api_client.py'>
+2023-11-16 15:57:25,489 - DEBUG - in-event <InotifyEvent: src_path=b'/app/api_client.py', wd=1, mask=IN_OPEN, cookie=0, name='api_client.py'>
+2023-11-16 15:57:25,489 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchDto.py'>
+2023-11-16 15:57:25,489 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchTimelineDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.py'>
+2023-11-16 15:57:25,490 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchOverclass.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchOverclass.py'>
+2023-11-16 15:57:25,490 - DEBUG - in-event <InotifyEvent: src_path=b'/app/SummonerDto.py', wd=1, mask=IN_OPEN, cookie=0, name='SummonerDto.py'>
+2023-11-16 15:58:11,735 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/MatchTimelineDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.cpython-310.pyc'>
+2023-11-16 15:58:11,736 - DEBUG - in-event <InotifyEvent: src_path=b'/app/__pycache__/SummonerDto.cpython-310.pyc', wd=2, mask=IN_OPEN, cookie=0, name='SummonerDto.cpython-310.pyc'>
+2023-11-16 15:58:11,736 - ERROR - API key is not set in environment variables
+2023-11-16 15:58:11,737 - DEBUG - in-event <InotifyEvent: src_path=b'/app/app.py', wd=1, mask=IN_OPEN, cookie=0, name='app.py'>
+2023-11-16 15:58:11,737 - DEBUG - in-event <InotifyEvent: src_path=b'/app/api_client.py', wd=1, mask=IN_OPEN, cookie=0, name='api_client.py'>
+2023-11-16 15:58:11,893 - DEBUG - in-event <InotifyEvent: src_path=b'/app/api_client.py', wd=1, mask=IN_OPEN, cookie=0, name='api_client.py'>
+2023-11-16 15:58:11,893 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchDto.py'>
+2023-11-16 15:58:11,894 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchTimelineDto.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchTimelineDto.py'>
+2023-11-16 15:58:11,894 - DEBUG - in-event <InotifyEvent: src_path=b'/app/MatchOverclass.py', wd=1, mask=IN_OPEN, cookie=0, name='MatchOverclass.py'>
+2023-11-16 15:58:11,894 - DEBUG - in-event <InotifyEvent: src_path=b'/app/SummonerDto.py', wd=1, mask=IN_OPEN, cookie=0, name='SummonerDto.py'>
