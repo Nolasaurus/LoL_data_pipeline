@@ -55,6 +55,7 @@ CREATE TABLE player_match_data (
     objectivesStolen INT,
     objectivesStolenAssists INT,
     pentaKills INT,
+    perksId INT,
     physicalDamageDealt INT,
     physicalDamageDealtToChampions INT,
     physicalDamageTaken INT,
@@ -104,5 +105,7 @@ CREATE TABLE player_match_data (
     wardsKilled INT,
     wardsPlaced INT,
     win BOOLEAN,
-    FOREIGN KEY (matchId) REFERENCES match_metadata(matchId)
+    FOREIGN KEY (matchId) REFERENCES match_metadata(matchId),
+    FOREIGN KEY (perksId) REFERENCES perks(perksId),
+    UNIQUE(matchId, participantId)
 );

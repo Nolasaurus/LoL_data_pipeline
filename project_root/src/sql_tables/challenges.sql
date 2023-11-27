@@ -1,5 +1,6 @@
 CREATE TABLE challenges (
-    challengesId INT PRIMARY KEY AUTO_INCREMENT,
+    challengesId SERIAL PRIMARY KEY,
+    matchId VARCHAR(255),
     participantId INT,
     bountyLevel INT,
     AssistStreakCount INT,
@@ -112,5 +113,5 @@ CREATE TABLE challenges (
     wardTakedowns INT,
     wardTakedownsBefore20M INT,
     wardsGuarded INT,
-    FOREIGN KEY (participantId) REFERENCES player_match_data(participantId)
+    FOREIGN KEY (matchId, participantId) REFERENCES player_match_data(matchId, participantId)
 );
