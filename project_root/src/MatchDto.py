@@ -1,23 +1,3 @@
-from api_client import API_Client
-
-"""
-Class and Sub-Class Structure:
-
-MatchDto
-    MetadataDto
-    InfoDto
-        ParticipantDto
-            PerksDto
-                PerkStatsDto
-                PerkStyleDto
-                    PerkStyleSelectionDto
-        TeamDto
-            BanDto
-            ObjectivesDto
-                ObjectiveDto
-"""
-
-
 class PerkStatsDto:
     def __init__(self, perk_stats_json):
         self.defense = perk_stats_json["defense"]
@@ -156,3 +136,39 @@ class MatchDto:
         self.metadata = MetadataDto(json["metadata"])
         self.match_id = self.metadata.matchId
         self.info = InfoDto(json["info"])
+
+
+        
+    def create_perks(self):
+        '''
+        Collates perk information into summary ready to insert into perks tables (see perks.sql)
+        '''
+        for participant in self.info.participants:
+            participant_perks = participant['perks']
+
+            # Extracting stat perks
+            perk_stats = {
+                'defense': participant_perks.statPerks.defense,
+                'flex': participant_perks.statPerks.flex,
+                'offense': participant_perks.statPerks.offense
+            }
+
+            # Assuming styles is a list and processing the first style as an example
+            primary_style = participant_perks.styles[0]  # Adjust based on your needs
+            perk_styles = {
+                'description': primary_style.description,
+                'style': primary_style.style
+            }
+
+        # Assuming selections is a list under primary_style
+        perk_style_selections = []
+        for selection in primary_style.selections:
+            selection_data = {
+                'perk': selection.perk,
+                'var1': selection.var1,
+                'var2': selection.var2,
+                'var3': selection.var3
+            }
+            perk_style_selections.append(selection_data)
+
+        return perk_stats, perk_styles, perk_style_selections
