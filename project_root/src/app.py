@@ -1,11 +1,12 @@
 import traceback
 import streamlit as st
+import psycopg2
+import os
 from MatchOverclass import MatchOverclass
 from SummonerDto import SummonerDto
 from api_client import API_Client
-
+import postgres_helperfile
 client = API_Client()
-
 
 def main():
     st.title("League of Legends Summoner Lookup")
@@ -40,6 +41,31 @@ def main():
             st.error(f"Unexpected error occurred: {e}")
             traceback_details = traceback.format_exc()
             st.error(f"Full traceback: {traceback_details}")
+
+    st.subheader("SQL Query Execution")
+    user_query = st.text_area("Enter your SQL query here:", height=100)
+
+    if st.button("Execute Query"):
+        try:
+            conn = postgres_helperfile.connect_db()
+            cursor = conn.cursor()
+            cursor.execute(user_query)
+
+            # Check if the query is a SELECT statement
+            if user_query.strip().lower().startswith("select"):
+                rows = cursor.fetchall()
+                st.write(rows)
+            else:
+                conn.commit()  # Commit the transaction for non-select queries
+                st.success("Query executed successfully")
+
+        except psycopg2.Error as e:
+            st.error(f"Database error: {e}")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
+        finally:
+            cursor.close()
+            conn.close()
 
 
 if __name__ == "__main__":

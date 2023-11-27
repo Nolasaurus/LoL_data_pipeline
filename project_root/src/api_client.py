@@ -45,7 +45,7 @@ rl_min = RateLimiter(100, 120)  # 100 requests per 2 minutes
 
 class API_Client:
     def __init__(self):
-        load_dotenv("./.env", verbose=True)
+        load_dotenv("../.env", verbose=True)
         self.api_key = os.environ.get("RIOT_API_KEY")
         if not self.api_key:
             logging.error("API key is not set in environment variables")
