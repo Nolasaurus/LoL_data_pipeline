@@ -3,7 +3,6 @@ import psycopg2
 import sys
 from dotenv import load_dotenv
 
-
 def connect_db():
     load_dotenv()
     return psycopg2.connect(
@@ -14,8 +13,13 @@ def connect_db():
         port="5432",
     )
 
+def execute_sql_file(file_path):
+    with open(file_path, 'r') as file:
+        sql_script = file.read()
+        connect_db().cursor.execute(sql_script)
 
-def tables_exist(conn, table_names):
+def tables_exist(table_names):
+    conn = connect_db()
     cursor = conn.cursor()
     try:
         for table_name in table_names:
@@ -27,47 +31,6 @@ def tables_exist(conn, table_names):
     except Exception as e:
         print(f"An error occurred: {e}")
         conn.rollback()
-
-
-def create_table_from_sql_file(sql_file_path, conn):
-    # Connect to the database
-    cursor = conn.cursor()
-
-    # Read SQL from file
-    with open(sql_file_path, 'r') as file:
-        sql_script = file.read()
-
-    # Execute SQL script
-    try:
-        cursor.execute(sql_script)
-        conn.commit()
-        print("Table created successfully")
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-def create_tables_if_none():
-    filepath = './sql_tables/'
-    sql_files_to_table_names = {
-        'match_metadata.sql': 'match_metadata',
-        'perks.sql': 'perks',
-        'player_match_data.sql': 'player_match_data',
-        'challenges.sql': 'challenges',
-        'participant_frames.sql': 'participant_frames',
-        'match_events.sql': 'match_events'
-    }
-
-    # Connect to the database
-    conn = connect_db()
-
-    # Check if tables exist and create them if they don't
-    for sql_file, table_name in sql_files_to_table_names.items():
-        if not tables_exist(conn, [table_name]):
-            create_table_from_sql_file(filepath + sql_file, conn)
-            print(f'created table: {table_name}')
-
-    # Close the database connection
-    conn.close()
-
 
 def add_df_to_table(table_name, data_df):
     conn = connect_db()
@@ -100,7 +63,6 @@ def add_df_to_table(table_name, data_df):
         conn.rollback()
         print("An error occurred:", e)
 
-
 def add_dict_to_table(table_name, data_dict):
     conn = connect_db()
     cursor = conn.cursor()
@@ -128,7 +90,40 @@ def add_dict_to_table(table_name, data_dict):
         conn.rollback()
         print("An error occurred:", e)
 
+# def _create_initial_tables():
+#     # SQL file paths in the required order
+#     sql_files = [
+#         'sql_tables/match_metadata.sql',
+#         'sql_tables/perks.sql',
+#         'sql_tables/player_match_data.sql',
+#         'sql_tables/challenges.sql',
+#         'sql_tables/participant_frames.sql',
+#         'sql_tables/match_events.sql',
+#         'sql_tables/teams.sql'
+#     ]
+
+#     try:
+#         conn = connect_db()
+#         cursor = conn.cursor()
+#         # Execute each SQL file
+#         for file_path in sql_files:
+#             execute_sql_file(file_path)
+#             print(f"Executed {file_path}")
+
+#         # Commit the changes
+#         conn.commit()
+
+#     except psycopg2.DatabaseError as e:
+#         print(f"Database error: {e}")
+#         if conn:
+#             conn.rollback()
+
+#     finally:
+#         if cursor:
+#             cursor.close()
+#         if conn:
+#             conn.close()
 
 if __name__ == "__main__":
-    if len(sys.argv) > 2 and sys.argv[1] == "create_table_from_sql_file":
-        create_table_from_sql_file(sys.argv[2])
+    if len(sys.argv) > 2 and sys.argv[1] == "execute_sql_file":
+        execute_sql_file(sys.argv[2])

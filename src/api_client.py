@@ -85,26 +85,24 @@ class API_Client:
     def get_summoner_by_name(self, summoner_name):
         # Remove leading/trailing whitespaces and encode space character
         summoner_name_encoded = summoner_name.strip().replace(" ", "%20")
-
         url = f"https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name_encoded}?api_key={self.api_key}"
         response = self._make_request(url, timeout=5)
         return response if response else None
 
     def get_match_ids_by_puuid(self, puuid, start=0, count=20):
         url = f"https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start={start}&count={count}&api_key={self.api_key}"
-        return self._make_request(url, timeout=5)
+        response = self._make_request(url, timeout=5)
+        return response if response else None
 
     def get_match_by_match_id(self, match_id):
         url = f"https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}?api_key={self.api_key}"
         response = self._make_request(url, timeout=5)
-        if response:
-            return response
+        return response if response else None
 
     def get_match_timeline(self, match_id):
         url = f"https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline?api_key={self.api_key}"
         response = self._make_request(url, timeout=5)
-        if response:
-            return response
+        return response if response else None
 
     def get_puuid_by_summon_id(self, summoner_id):
         url = f"https://na1.api.riotgames.com/lol/summoner/v4/summoners/{summoner_id}?api_key={self.api_key}"
