@@ -133,9 +133,12 @@ class MatchDto:
     """
 
     def __init__(self, json):
+        print('MatchDto called')
         self.metadata = MetadataDto(json["metadata"])
         self.match_id = self.metadata.matchId
         self.info = InfoDto(json["info"])
+
+        print(self.metadata, self.info)
 
 
         

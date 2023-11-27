@@ -5,3 +5,6 @@ __pycache__
 .env
 src/tester.ipynb
 src/testing.ipynb
+build/
+src/LOL_api.egg-info/
+*.ipynb
