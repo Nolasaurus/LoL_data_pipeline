@@ -1,10 +1,7 @@
-import matplotlib.pyplot as plt
-from MatchDto import MatchDto
-from MatchTimelineDto import MatchTimelineDto
-from api_client import API_Client
-import pandas as pd
-import postgres_helperfile
-
+from .postgres_helperfile import connect_db, add_dict_to_table
+from .MatchDto import MatchDto
+from .MatchTimelineDto import MatchTimelineDto
+from .api_client import API_Client
 
 class MatchOverclass:
     """
@@ -21,87 +18,65 @@ class MatchOverclass:
         match_timeline (MatchTimelineDto): Object containing the match timeline.
         """
 
-        self.match_data = self.get_match_dto(match_id)
-        self.match_timeline = self.get_match_timeline_dto(match_id)
+        self.match_data = self.get_match_dto(match_id, API_Client)
+        self.match_timeline = self.get_match_timeline_dto(match_id, API_Client)
         self.match_id = self.match_data.metadata.matchId
         self.puuid_dict = {
             participant.puuid: participant.summonerName
             for participant in self.match_data.info.participants
         }
 
-    def get_gold_by_summoner_name(self):
-        # Initialize an empty list to store the data
-        gold_data = []
-        participant_dict = {}
-        for participant in self.match_timeline.info.participants:
-            participant_id = participant["participantId"]
-            puuid = participant["puuid"]
-            participant_dict[participant_id] = puuid
+    def insert_match_metadata(self):
+        '''
+        Collate MatchDto information into summary and insert into table match_metadata (see match_metadata.sql)
+        '''
 
-        for frame in self.match_timeline.info.frames:
-            timestamp = frame.timestamp
-            # Iterate over each participant frame within a frame
-            for participant_id, participant_frame in frame.participantFrames.items():
-                # Extract the total gold for the participant in this frame
-                total_gold = participant_frame.totalGold
+        conn = connect_db()
+        cursor = conn.cursor()
 
-                # Append the data to our list
-                puuid = participant_dict[int(participant_id)]
-                summoner_name = self.puuid_dict[puuid]
-                gold_data.append([timestamp, summoner_name, total_gold])
+        try:
+            # Check if match_id already exists in the table
+            cursor.execute("SELECT COUNT(*) FROM match_metadata WHERE matchId = %s", (self.match_data.metadata.matchId,))
+            if cursor.fetchone()[0] == 0:
+                # The match_id does not exist, proceed with insertion
+                match_metadata_dict = {
+                    'dataVersion': self.match_data.metadata.dataVersion,
+                    'matchId': self.match_data.metadata.matchId,
+                    'gameCreation': self.match_data.info.gameCreation,
+                    'gameDuration': self.match_data.info.gameDuration,
+                    'gameEndTimestamp': self.match_data.info.gameEndTimestamp,
+                    'gameId': self.match_data.info.gameId,
+                    'gameMode': self.match_data.info.gameMode,
+                    'gameName': self.match_data.info.gameName,
+                    'gameStartTimestamp': self.match_data.info.gameStartTimestamp,
+                    'gameType': self.match_data.info.gameType,
+                    'gameVersion': self.match_data.info.gameVersion,
+                    'mapId': self.match_data.info.mapId,
+                    'platformId': self.match_data.info.platformId,
+                    'queueId': self.match_data.info.queueId,
+                    'tournamentCode': self.match_data.info.tournamentCode
+                }
 
-        # Convert the list to a DataFrame
-        gold_df = pd.DataFrame(
-            gold_data, columns=["frame", "summoner_name", "total_gold"]
-        )
+                add_dict_to_table('match_metadata', match_metadata_dict)
+            else:
+                print("Match with this ID already exists in the database.")
+        except Exception as e:
+            print("An error occurred:", e)
+        finally:
+            cursor.close()
+            conn.close()
 
-        return gold_df
 
-    def get_events_by_frame(self):
-        event_data = []
+    def push_data_to_sql(self):
+        self.insert_match_metadata
 
-        # Iterate over each frame
-        for frame in self.match_timeline.info.frames:
-            # Iterate over each event within a frame
-            for event in frame.events:
-                # Dictionary to hold event details
-                event_details = {}
-
-                # Dynamically add all properties of the event to the dictionary
-                for key, value in event.__dict__.items():
-                    event_details[key] = value
-
-                # Append the event details to the event_data list
-                event_data.append(event_details)
-
-        # Convert the list of event details to a DataFrame
-        event_df = pd.DataFrame(event_data)
-
-        return event_df
-
-    def plot_gold_by_frame(self) -> plt.Figure:
-        gold_data = self.get_gold_by_summoner_name()
-
-        fig, ax = plt.subplots(figsize=(10, 6))
-
-        for summoner_name, group in gold_data.groupby("summoner_name"):
-            ax.plot(group["frame"], group["total_gold"], label=summoner_name)
-
-        ax.set_xlabel("Frame")
-        ax.set_ylabel("Total Gold")
-        ax.set_title(f"Total Gold Over Time for Match {self.match_id}")
-        ax.legend()
-
-        return fig
 
     @staticmethod
-    def get_match_timeline_dto(match_id):
-        api_client = API_Client()
+    def get_match_timeline_dto(match_id, api_client):
         match_timeline = api_client.get_match_timeline(match_id)
         return MatchTimelineDto(match_timeline)
 
     @staticmethod
-    def get_match_dto(match_id):
-        api_client = API_Client()
+    def get_match_dto(match_id, api_client):
         match_data = api_client.get_match_by_match_id(match_id)
         return MatchDto(match_data)
