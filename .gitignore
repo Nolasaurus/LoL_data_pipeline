@@ -8,3 +8,4 @@ src/testing.ipynb
 build/
 src/LOL_api.egg-info/
 *.ipynb
+/example_frontend
