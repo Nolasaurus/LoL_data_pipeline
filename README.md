@@ -7,7 +7,7 @@ Future aspirations include enhancing error handling, expanding match visualizati
 ✅ Streamlit Interface: Basic user interface for summoner name input.  
 ✅ Summoner Data Retrieval: Functionality to fetch summoner details using the input name.  
 ✅ Match Data Fetching: Logic to retrieve match IDs for a given summoner.  
-✅ Match Data Visualization: Partial implementation of match data visualization.
+✅ Match Data Visualization: Partial implementation of match data visualization.  
 ✅ Error Handling: Basic error handling for API calls and data processing.  
 ✅ SQL Query Execution Interface: A section in the Streamlit app for executing custom SQL queries against the database.  
 ✅ Docker Integration: Containerizing the Streamlit frontend and PostgreSQL database.  
