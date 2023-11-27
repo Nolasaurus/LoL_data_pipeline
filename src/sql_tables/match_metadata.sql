@@ -1,6 +1,6 @@
 CREATE TABLE match_metadata (
     dataVersion VARCHAR(255),
-    matchId VARCHAR(255),
+    matchId VARCHAR(255) PRIMARY KEY,
     gameCreation BIGINT,
     gameDuration BIGINT,
     gameEndTimestamp BIGINT,
