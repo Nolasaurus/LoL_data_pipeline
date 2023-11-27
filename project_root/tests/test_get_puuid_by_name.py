@@ -1,12 +1,12 @@
 import unittest
 from unittest.mock import patch
-from project_root.src.api_client import API_Client
+from api_client import API_Client
 
 class TestGetPuuidByName(unittest.TestCase):
     def __init__(self, methodName: str = "runTest") -> None:
         super().__init__(methodName)
 
-    @patch('project_root.src.api_client.requests.get')
+    @patch('api_client.requests.get')
     def test_successful_case(self, mock_get):
         # Mocking a successful response from the API
         mock_response = mock_get.return_value
@@ -18,7 +18,7 @@ class TestGetPuuidByName(unittest.TestCase):
 
         self.assertEqual(result['puuid'], 'aWzZ7KxMV8LGxgdrCOYQ4Mc8WXoVcH0l6QxLxUkiFNfP98derWmOax6lMGyU7mONopTrx13jm0qU0A')
 
-    @patch('project_root.src.api_client.requests.get')
+    @patch('api_client.requests.get')
     def test_failure_case(self, mock_get):
         # Mocking a failure response from the API
         mock_response = mock_get.return_value

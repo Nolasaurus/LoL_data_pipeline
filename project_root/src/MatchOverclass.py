@@ -1,7 +1,7 @@
-from .postgres_helperfile import connect_db, add_dict_to_table
-from .MatchDto import MatchDto
-from .MatchTimelineDto import MatchTimelineDto
-from .api_client import API_Client
+import postgres_helperfile
+from MatchDto import MatchDto
+from MatchTimelineDto import MatchTimelineDto
+from api_client import API_Client
 
 class MatchOverclass:
     """
@@ -31,7 +31,7 @@ class MatchOverclass:
         Collate MatchDto information into summary and insert into table match_metadata (see match_metadata.sql)
         '''
 
-        conn = connect_db()
+        conn = postgres_helperfile.connect_db()
         cursor = conn.cursor()
 
         try:
@@ -57,7 +57,7 @@ class MatchOverclass:
                     'tournamentCode': self.match_data.info.tournamentCode
                 }
 
-                add_dict_to_table('match_metadata', match_metadata_dict)
+                postgres_helperfile.add_dict_to_table('match_metadata', match_metadata_dict)
             else:
                 print("Match with this ID already exists in the database.")
         except Exception as e:

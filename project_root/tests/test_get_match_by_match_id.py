@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import patch
 import json
-from project_root.src.api_client import API_Client
+from api_client import API_Client
 
 class TestGetMatchByMatchId(unittest.TestCase):
-    @patch('project_root.src.api_client.requests.get')
+    @patch('api_client.requests.get')
     def test_successful_case(self, mock_get):
         # Read the expected response from the JSON file
         with open('tests/files/NA1_4729149632_match_data.json', 'r') as file:
@@ -21,7 +21,7 @@ class TestGetMatchByMatchId(unittest.TestCase):
 
         self.assertEqual(result, expected_match_data)
 
-    @patch('project_root.src.api_client.requests.get')
+    @patch('api_client.requests.get')
     def test_failure_case(self, mock_get):
         # Mocking a failure response from the API
         mock_response = mock_get.return_value
