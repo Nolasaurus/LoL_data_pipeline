@@ -1,9 +1,10 @@
+app.log
 __pycache__
-eda/
-example_frontend/
-flowcharts/
-API_data/
-.venv/
+.pytest_cache
+.venv
 .env
-project_root/mage-ai/mage_data/lol_data_pipeline/.cache/
-testing_grounds/
+src/tester.ipynb
+src/testing.ipynb
+build/
+src/LOL_api.egg-info/
+*.ipynb
