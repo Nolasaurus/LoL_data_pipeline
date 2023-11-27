@@ -1,0 +1,35 @@
+# LoL Data Pipeline
+
+This project strives to implement the following features:
+
+- **Basic API Functionality:** Enables interaction with the LoL API.
+- **Match Timeline Data Extraction:** Retrieves detailed timeline data for matches.
+- **3NF Data Upload to PostgreSQL:** Structures and uploads data to a PostgreSQL database in third normal form (3NF).
+- **Match Data Presentation:** Utilizes Streamlit frontend to present match data.
+
+## Completed Items
+
+- **Streamlit Interface:** Basic user interface for summoner name input.
+- **Summoner Data Retrieval:** Fetches summoner details using the input name.
+- **Match Data Fetching:** Retrieves match IDs for a given summoner.
+- **Match Data Visualization:** Partial implementation (e.g., `plot_gold_by_frame()` method in `MatchOverclass`).
+- **Error Handling:** Basic handling for API calls and data processing.
+- **SQL Query Execution Interface:** A section in the Streamlit app for executing custom SQL queries against the database.
+- **Docker Integration:** Containerization of the Streamlit frontend and PostgreSQL database.
+
+## Yet-to-be-Completed Items
+
+- **Comprehensive Error Handling:** Enhancements for robustness.
+- **Full Match Visualization:** Expanding visualization to include KDA, gold, items, level, damage, etc.
+- **Time-Series Data Visualization:** Implementing line charts for gold, level, and XP for all match participants.
+- **Result Display for SQL Queries:** Handling and displaying results, particularly for SELECT statements.
+- **Frontend Aesthetics and Usability:** Improving user interface for better experience and aesthetics.
+- **Testing and Debugging:** Comprehensive testing to ensure functionality and reliability.
+- **Deployment and Accessibility:** Preparation for remote hosting with server configuration and security considerations (potentially Azure).
+
+	
+	
+	
+# Current Homepage:
+* Input a summoner name to return their recent match summaries. 
+* Run a SQL query on a live 3NF normalized database containing match data and timelines.
