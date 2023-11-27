@@ -1,10 +1,10 @@
 import unittest
 from unittest.mock import patch
-from backend.src.api_client import API_Client
+from project_root.src.api_client import API_Client
 
 class TestGetMatchIdsByPuuid(unittest.TestCase):
 
-    @patch('backend.src.api_client.requests.get')
+    @patch('project_root.src.api_client.requests.get')
     def test_successful_case(self, mock_get):
         # Mocking a successful response from the API
         expected_match_ids = [
@@ -23,7 +23,7 @@ class TestGetMatchIdsByPuuid(unittest.TestCase):
 
         self.assertEqual(result, expected_match_ids)
 
-    @patch('backend.src.api_client.requests.get')
+    @patch('project_root.src.api_client.requests.get')
     def test_failure_case(self, mock_get):
         # Mocking a failure response from the API
         mock_response = mock_get.return_value

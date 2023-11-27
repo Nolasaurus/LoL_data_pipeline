@@ -1,0 +1,7 @@
+app.log
+__pycache__
+.pytest_cache
+.venv
+.env
+src/tester.ipynb
+src/testing.ipynb
