@@ -21,3 +21,7 @@ Future aspirations include enhancing error handling, expanding match visualizati
 🔳 Frontend Aesthetics and Usability: Enhancing the user interface for better user experience and aesthetics.  
 🔳 Testing and Debugging: Comprehensive testing of all functionalities to ensure reliability.  
 🔳 Deployment and Accessibility: Setting up the application for remote hosting, involving server configuration and security considerations. 
+
+## Bonus 
+➕ Replace time.sleep in test_app.py with Selenium's explicit wait conditions  
+➕ Expand test_app.py to dynamically test all tables in db
