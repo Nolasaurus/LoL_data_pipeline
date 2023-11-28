@@ -1,22 +1,42 @@
 import os
 import psycopg2
+import psycopg2.pool
 from dotenv import load_dotenv
 
-def connect_db(user_role='admin'):
-    load_dotenv()
-    user = 'nolan' if user_role == 'admin' else 'read_only'
-    password_key = 'POSTGRES_PASSWORD' if user_role == 'admin' else 'READONLY_POSTGRES_PASSWORD'
-    
-    return psycopg2.connect(
-        dbname="loldb",
-        user=user,
-        password=os.environ.get(password_key),
-        host="postgres",
-        port="5432",
-    )
+load_dotenv()
+# Initialize connection pools for admin and read-only users
+admin_pool = psycopg2.pool.ThreadedConnectionPool(
+    minconn=1, maxconn=5,
+    dbname="loldb",
+    user=os.getenv("ADMIN_POSTGRES_USER"),
+    password=os.getenv("ADMIN_POSTGRES_PASSWORD"),
+    host="postgres",
+    port="5432"
+)
 
-def create_read_only_user(username, password):
-    with connect_db('admin') as conn:
+readonly_pool = psycopg2.pool.ThreadedConnectionPool(
+    minconn=1, maxconn=5,
+    dbname="loldb",
+    user=os.getenv("READONLY_POSTGRES_USER"),
+    password=os.getenv("READONLY_POSTGRES_PASSWORD"),
+    host="postgres",
+    port="5432"
+)
+
+def get_db_connection(user_role: str ='readonly'):
+    if user_role == 'admin':
+        return admin_pool.getconn()
+    else:
+        return readonly_pool.getconn()
+
+def release_db_connection(conn, user_role: str ='admin'):
+    if user_role == 'admin':
+        admin_pool.putconn(conn)
+    else:
+        readonly_pool.putconn(conn)
+
+def create_read_only_user(username: str = None, password: str = None):
+    with get_db_connection('admin') as conn:
         with conn.cursor() as cursor:
             cursor.execute("CREATE USER %s WITH PASSWORD %s;", (username, password))
             cursor.execute("GRANT CONNECT ON DATABASE loldb TO %s;", (username,))
@@ -25,15 +45,26 @@ def create_read_only_user(username, password):
             cursor.execute("ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO %s;", (username,))
 
 
-def execute_sql_file(file_path):
+def execute_sql_file(file_path: str = None):
     with open(file_path, 'r') as file:
         sql_script = file.read()
-        with connect_db('admin') as conn:
+        with get_db_connection('admin') as conn:
             with conn.cursor() as cursor:
                 cursor.execute(sql_script)
 
+
+def execute_sql_query(query):
+    with postgres_helperfile.get_db_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query)
+            if query.strip().lower().startswith("select"):
+                return cursor.fetchall()
+            else:
+                return False
+
+
 def tables_exist(table_names):
-    with connect_db('read_only') as conn:
+    with get_db_connection() as conn:
         with conn.cursor() as cursor:
             for table_name in table_names:
                 cursor.execute("SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = %s);", (table_name,))
@@ -42,7 +73,7 @@ def tables_exist(table_names):
             return True
 
 def add_df_to_table(table_name, data_df):
-    with connect_db() as conn:
+    with get_db_connection() as conn:
         with conn.cursor('admin') as cursor:
             cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")
             db_columns = [desc[0] for desc in cursor.description]
@@ -58,7 +89,7 @@ def add_df_to_table(table_name, data_df):
 
 
 def add_dict_to_table(table_name, data_dict):
-    with connect_db('admin') as conn:
+    with get_db_connection('admin') as conn:
         with conn.cursor() as cursor:
             cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")
             db_columns = [desc[0] for desc in cursor.description]
@@ -102,8 +133,8 @@ def add_dict_to_table(table_name, data_dict):
 #         if conn:
 #             conn.rollback()
 
-#     finally:
-#         if cursor:
-#             cursor.close()
-#         if conn:
-#             conn.close()
+
+
+def close_connection_pools():
+    admin_pool.closeall()
+    readonly_pool.closeall()
