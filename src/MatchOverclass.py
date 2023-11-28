@@ -31,10 +31,8 @@ class MatchOverclass:
         Collate MatchDto information into summary and insert into table match_metadata (see match_metadata.sql)
         '''
 
-        with postgres_helperfile.get_db_connection() as conn:
-            cursor = conn.cursor()
-
-            try:
+        with postgres_helperfile.connect_db() as conn:
+            with conn.cursor() as cursor:
                 # Check if match_id already exists in the table
                 cursor.execute("SELECT COUNT(*) FROM match_metadata WHERE matchId = %s", (self.match_data.metadata.matchId,))
                 if cursor.fetchone()[0] == 0:
@@ -58,10 +56,10 @@ class MatchOverclass:
                     }
 
                     postgres_helperfile.add_dict_to_table('match_metadata', match_metadata_dict)
+
                 else:
                     print("Match with this ID already exists in the database.")
-            except Exception as e:
-                print("An error occurred:", e)
+
 
     def push_data_to_sql(self):
         self.insert_match_metadata
