@@ -31,41 +31,37 @@ class MatchOverclass:
         Collate MatchDto information into summary and insert into table match_metadata (see match_metadata.sql)
         '''
 
-        conn = postgres_helperfile.connect_db()
-        cursor = conn.cursor()
+        with postgres_helperfile.get_db_connection() as conn:
+            cursor = conn.cursor()
 
-        try:
-            # Check if match_id already exists in the table
-            cursor.execute("SELECT COUNT(*) FROM match_metadata WHERE matchId = %s", (self.match_data.metadata.matchId,))
-            if cursor.fetchone()[0] == 0:
-                # The match_id does not exist, proceed with insertion
-                match_metadata_dict = {
-                    'dataVersion': self.match_data.metadata.dataVersion,
-                    'matchId': self.match_data.metadata.matchId,
-                    'gameCreation': self.match_data.info.gameCreation,
-                    'gameDuration': self.match_data.info.gameDuration,
-                    'gameEndTimestamp': self.match_data.info.gameEndTimestamp,
-                    'gameId': self.match_data.info.gameId,
-                    'gameMode': self.match_data.info.gameMode,
-                    'gameName': self.match_data.info.gameName,
-                    'gameStartTimestamp': self.match_data.info.gameStartTimestamp,
-                    'gameType': self.match_data.info.gameType,
-                    'gameVersion': self.match_data.info.gameVersion,
-                    'mapId': self.match_data.info.mapId,
-                    'platformId': self.match_data.info.platformId,
-                    'queueId': self.match_data.info.queueId,
-                    'tournamentCode': self.match_data.info.tournamentCode
-                }
+            try:
+                # Check if match_id already exists in the table
+                cursor.execute("SELECT COUNT(*) FROM match_metadata WHERE matchId = %s", (self.match_data.metadata.matchId,))
+                if cursor.fetchone()[0] == 0:
+                    # The match_id does not exist, proceed with insertion
+                    match_metadata_dict = {
+                        'dataVersion': self.match_data.metadata.dataVersion,
+                        'matchId': self.match_data.metadata.matchId,
+                        'gameCreation': self.match_data.info.gameCreation,
+                        'gameDuration': self.match_data.info.gameDuration,
+                        'gameEndTimestamp': self.match_data.info.gameEndTimestamp,
+                        'gameId': self.match_data.info.gameId,
+                        'gameMode': self.match_data.info.gameMode,
+                        'gameName': self.match_data.info.gameName,
+                        'gameStartTimestamp': self.match_data.info.gameStartTimestamp,
+                        'gameType': self.match_data.info.gameType,
+                        'gameVersion': self.match_data.info.gameVersion,
+                        'mapId': self.match_data.info.mapId,
+                        'platformId': self.match_data.info.platformId,
+                        'queueId': self.match_data.info.queueId,
+                        'tournamentCode': self.match_data.info.tournamentCode
+                    }
 
-                postgres_helperfile.add_dict_to_table('match_metadata', match_metadata_dict)
-            else:
-                print("Match with this ID already exists in the database.")
-        except Exception as e:
-            print("An error occurred:", e)
-        finally:
-            cursor.close()
-            conn.close()
-
+                    postgres_helperfile.add_dict_to_table('match_metadata', match_metadata_dict)
+                else:
+                    print("Match with this ID already exists in the database.")
+            except Exception as e:
+                print("An error occurred:", e)
 
     def push_data_to_sql(self):
         self.insert_match_metadata

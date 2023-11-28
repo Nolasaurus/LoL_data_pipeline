@@ -4,8 +4,10 @@ services:
   postgres:
     image: postgres:13
     environment:
-      POSTGRES_USER: nolan
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      ADMIN_POSTGRES_USER: ${ADMIN_POSTGRES_USER}
+      ADMIN_POSTGRES_PASSWORD: ${ADMIN_POSTGRES_PASSWORD}
+      READONLY_POSTGRES_USER: ${READONLY_POSTGRES_USER}
+      READONLY_POSTGRES_PASSWORD: ${READONLY_POSTGRES_PASSWORD}
       POSTGRES_DB: loldb
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -20,8 +22,10 @@ services:
     build: .  # Set the build context to the project root
     environment:
       env_file: .env
-      POSTGRES_USER: nolan
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      ADMIN_POSTGRES_USER: ${ADMIN_POSTGRES_USER}
+      ADMIN_POSTGRES_PASSWORD: ${ADMIN_POSTGRES_PASSWORD}
+      READONLY_POSTGRES_USER: ${READONLY_POSTGRES_USER}
+      READONLY_POSTGRES_PASSWORD: ${READONLY_POSTGRES_PASSWORD}
       RIOT_API_KEY: ${RIOT_API_KEY}
       POSTGRES_DB: loldb
       POSTGRES_HOST: postgres

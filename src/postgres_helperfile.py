@@ -1,134 +1,140 @@
 import os
 import psycopg2
-import sys
+import psycopg2.pool
 from dotenv import load_dotenv
 
+load_dotenv()
+# Initialize connection pools for admin and read-only users
+admin_pool = psycopg2.pool.ThreadedConnectionPool(
+    minconn=1, maxconn=5,
+    dbname="loldb",
+    user=os.getenv("ADMIN_POSTGRES_USER"),
+    password=os.getenv("ADMIN_POSTGRES_PASSWORD"),
+    host="postgres",
+    port="5432"
+)
 
-def connect_db():
-    load_dotenv()
-    return psycopg2.connect(
-        dbname="loldb",
-        user="nolan",
-        password=os.environ.get("POSTGRES_PASSWORD"),
-        host="postgres",
-        port="5432",
-    )
+readonly_pool = psycopg2.pool.ThreadedConnectionPool(
+    minconn=1, maxconn=5,
+    dbname="loldb",
+    user=os.getenv("READONLY_POSTGRES_USER"),
+    password=os.getenv("READONLY_POSTGRES_PASSWORD"),
+    host="postgres",
+    port="5432"
+)
+
+def get_db_connection(user_role: str ='readonly'):
+    if user_role == 'admin':
+        return admin_pool.getconn()
+    else:
+        return readonly_pool.getconn()
+
+def release_db_connection(conn, user_role: str ='admin'):
+    if user_role == 'admin':
+        admin_pool.putconn(conn)
+    else:
+        readonly_pool.putconn(conn)
+
+def create_read_only_user(username: str = None, password: str = None):
+    with get_db_connection('admin') as conn:
+        with conn.cursor() as cursor:
+            cursor.execute("CREATE USER %s WITH PASSWORD %s;", (username, password))
+            cursor.execute("GRANT CONNECT ON DATABASE loldb TO %s;", (username,))
+            cursor.execute("GRANT USAGE ON SCHEMA public TO %s;", (username,))
+            cursor.execute("GRANT SELECT ON ALL TABLES IN SCHEMA public TO %s;", (username,))
+            cursor.execute("ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO %s;", (username,))
 
 
-def tables_exist(conn, table_names):
-    cursor = conn.cursor()
-    try:
-        for table_name in table_names:
-            cursor.execute(f"SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = '{table_name}');")
-            print(cursor.fetchall)
-            if not cursor.fetchone()[0]:
-                return False
-        return True
-    except Exception as e:
-        print(f"An error occurred: {e}")
-        conn.rollback()
-
-
-def create_table_from_sql_file(sql_file_path, conn):
-    # Connect to the database
-    cursor = conn.cursor()
-
-    # Read SQL from file
-    with open(sql_file_path, 'r') as file:
+def execute_sql_file(file_path: str = None):
+    with open(file_path, 'r') as file:
         sql_script = file.read()
+        with get_db_connection('admin') as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(sql_script)
 
-    # Execute SQL script
-    try:
-        cursor.execute(sql_script)
-        conn.commit()
-        print("Table created successfully")
-    except Exception as e:
-        print(f"An error occurred: {e}")
 
-def create_tables_if_none():
-    filepath = './sql_tables/'
-    sql_files_to_table_names = {
-        'match_metadata.sql': 'match_metadata',
-        'perks.sql': 'perks',
-        'player_match_data.sql': 'player_match_data',
-        'challenges.sql': 'challenges',
-        'participant_frames.sql': 'participant_frames',
-        'match_events.sql': 'match_events'
-    }
+def execute_sql_query(query):
+    with postgres_helperfile.get_db_connection() as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(query)
+            if query.strip().lower().startswith("select"):
+                return cursor.fetchall()
+            else:
+                return False
 
-    # Connect to the database
-    conn = connect_db()
 
-    # Check if tables exist and create them if they don't
-    for sql_file, table_name in sql_files_to_table_names.items():
-        if not tables_exist(conn, [table_name]):
-            create_table_from_sql_file(filepath + sql_file, conn)
-            print(f'created table: {table_name}')
-
-    # Close the database connection
-    conn.close()
-
+def tables_exist(table_names):
+    with get_db_connection() as conn:
+        with conn.cursor() as cursor:
+            for table_name in table_names:
+                cursor.execute("SELECT EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = %s);", (table_name,))
+                if not cursor.fetchone()[0]:
+                    return False
+            return True
 
 def add_df_to_table(table_name, data_df):
-    conn = connect_db()
-    cursor = conn.cursor()
-    try:
-        # Retrieve the columns from the table in the database
-        cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")
-        db_columns = [desc[0] for desc in cursor.description]
+    with get_db_connection() as conn:
+        with conn.cursor('admin') as cursor:
+            cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")
+            db_columns = [desc[0] for desc in cursor.description]
+            df_columns = data_df.columns.tolist()
 
-        # Get the columns from the DataFrame
-        df_columns = data_df.columns.tolist()
+            if db_columns != df_columns:
+                print("Columns in df do not match cols in db table. Aborted.")
+                return
 
-        # Check if the columns match
-        if db_columns != df_columns:
-            print("Columns in df do not match cols in db table. Aborted.")
-            return
-
-        values = [tuple(row) for row in data_df.values]
-
-        # Create the INSERT INTO statement
-        insert_stmt = f"INSERT INTO {table_name} ({','.join(df_columns)}) VALUES %s"
-
-        # Execute the insert
-        psycopg2.extras.execute_values(cursor, insert_stmt, values)
-
-        # Commit the transaction
-        conn.commit()
-    except Exception as e:
-        # If any errors occur, rollback the transaction
-        conn.rollback()
-        print("An error occurred:", e)
+            values = [tuple(row) for row in data_df.values]
+            insert_stmt = f"INSERT INTO {table_name} ({','.join(df_columns)}) VALUES %s"
+            psycopg2.extras.execute_values(cursor, insert_stmt, values)
 
 
 def add_dict_to_table(table_name, data_dict):
-    conn = connect_db()
-    cursor = conn.cursor()
-    try:
-        # Retrieve the columns from the table in the database
-        cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")
-        db_columns = [desc[0] for desc in cursor.description]
+    with get_db_connection('admin') as conn:
+        with conn.cursor() as cursor:
+            cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")
+            db_columns = [desc[0] for desc in cursor.description]
 
-        # Check if the dictionary keys match the database columns
-        if set(db_columns) != set(data_dict.keys()):
-            print("Keys in dict do not match cols in db table. Aborted.")
-            return
+            if set(db_columns) != set(data_dict.keys()):
+                print("Keys in dict do not match cols in db table. Aborted.")
+                return
 
-        # Create the INSERT INTO statement
-        columns = ', '.join(data_dict.keys())
-        placeholders = ', '.join(['%s'] * len(data_dict))
-        insert_stmt = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+            columns = ', '.join(data_dict.keys())
+            placeholders = ', '.join(['%s'] * len(data_dict))
+            insert_stmt = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+            cursor.execute(insert_stmt, list(data_dict.values()))
 
-        # Execute the insert
-        cursor.execute(insert_stmt, list(data_dict.values()))
-        conn.commit()
-        
-    except Exception as e:
-        # If any errors occur, rollback the transaction
-        conn.rollback()
-        print("An error occurred:", e)
+    
+
+# def _create_initial_tables():
+#     # SQL file paths in the required order
+#     sql_files = [
+#         'sql_tables/match_metadata.sql',
+#         'sql_tables/perks.sql',
+#         'sql_tables/player_match_data.sql',
+#         'sql_tables/challenges.sql',
+#         'sql_tables/participant_frames.sql',
+#         'sql_tables/match_events.sql',
+#         'sql_tables/teams.sql'
+#     ]
+
+#     try:
+#         conn = connect_db()
+#         cursor = conn.cursor()
+#         # Execute each SQL file
+#         for file_path in sql_files:
+#             execute_sql_file(file_path)
+#             print(f"Executed {file_path}")
+
+#         # Commit the changes
+#         conn.commit()
+
+#     except psycopg2.DatabaseError as e:
+#         print(f"Database error: {e}")
+#         if conn:
+#             conn.rollback()
 
 
-if __name__ == "__main__":
-    if len(sys.argv) > 2 and sys.argv[1] == "create_table_from_sql_file":
-        create_table_from_sql_file(sys.argv[2])
+
+def close_connection_pools():
+    admin_pool.closeall()
+    readonly_pool.closeall()
