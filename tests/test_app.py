@@ -38,8 +38,8 @@ class TestApp:
 
 
     @pytest.mark.parametrize("sql_query, expected_result, expected_behavior", [
-        ("ALTER TABLE match_metadata ADD COLUMN test_column VARCHAR(255)", "error", "error"),
-        ("SELECT * FROM teams", "[", "list")
+        ("ALTER TABLE match_metadata ADD COLUMN test_column VARCHAR(255)", "must be owner of table match_metadata", "error"),
+        ("SELECT * FROM teams", "[]", "list")
     ])
     def test_sql_query(self, driver, sql_query, expected_result, expected_behavior):
         # Access the Streamlit app
@@ -51,23 +51,17 @@ class TestApp:
         # Input the SQL query
         sql_query_input = driver.find_element(By.XPATH, "//textarea")
         sql_query_input.send_keys(sql_query)
-        sql_query_input.send_keys(Keys.RETURN)
+        sql_query_input.send_keys(Keys.CONTROL, Keys.ENTER)
 
-        # Click the "Execute Query" button
-        execute_query_button = WebDriverWait(driver, 5).until(EC.element_to_be_clickable((By.XPATH,
-                                                                                            '/html/body/div/div[1]/div[1]/div/div/div/section/div[1]/div/div/div[5]/div/button')))
-        execute_query_button.click()
+        def assert_text_at_xpath(driver, xpath, expected_text):
+            WebDriverWait(driver, 5).until(EC.visibility_of_element_located((By.XPATH, xpath)))
+            assert expected_text in driver.find_element(By.XPATH, xpath).text, f"{expected_text} not found at {xpath}"
 
-        # Wait for the response to load
-        object_content = '/html/body/div/div[1]/div[1]/div/div/div/section/div[1]/div/div/div[6]/div/div/div'
-        WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, "object_content")))
-        # Verify the output
-        output_element = driver.find_element(By.XPATH, "object_content")
-        output_text = output_element.text
+        if expected_behavior == "list":
+            # Use the helper function to assert text presence
+            assert_text_at_xpath(driver, "//span[contains(text(), '[')]", '[')
+            assert_text_at_xpath(driver, "//span[contains(text(), ']')]", ']')
 
         if expected_behavior == "error":
-            assert expected_result in output_text.lower(), "Expected error message not found"
-        elif expected_behavior == "list":
-            assert "[" in output_text and "]" in output_text, "Output is not a list"
-        else:
-            assert expected_result in output_text, "Expected result not found in output"
+            # Use the helper function to assert text presence
+            assert_text_at_xpath(driver, "//div[@role='alert']//p", expected_result)
