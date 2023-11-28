@@ -14,7 +14,7 @@ Future aspirations include enhancing error handling, expanding match visualizati
 
 
 ## Yet-to-be-Completed Items
-🔳 Automated API data insertion into sql
+🔳 Automated API data insertion into sql  
 🔳 Comprehensive Error Handling: Refinement of error handling for more robustness.  
 🔳 Full Match Visualization: Expansion of the match data visualization to include all required stats (KDA, gold, items, level, damage, etc.).  
 🔳 Time-Series Data Visualization: Implementation of the time-series line charts for gold, level, and XP for all match participants.  
