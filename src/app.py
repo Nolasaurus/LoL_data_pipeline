@@ -4,10 +4,13 @@ from SummonerDto import SummonerDto
 from api_client import API_Client
 import postgres_helperfile  # Ensure postgres_helperfile is in your project directory
 
+
 def main():
     st.title("League of Legends Summoner Lookup")
 
-    summoner_name = st.text_input("Enter summoner name", placeholder="Enter summoner name")
+    summoner_name = st.text_input(
+        "Enter summoner name", placeholder="Enter summoner name"
+    )
     if summoner_name:
         try:
             # API call to retrieve puuid from summoner name
@@ -15,7 +18,7 @@ def main():
             summoner_puuid = summoner_dto.puuid
         except Exception as e:
             st.error(f"Error fetching summoner data: {e}")
-            return 
+            return
 
         try:
             # API call to retrieve puuid's last 20 matches
@@ -40,7 +43,6 @@ def main():
                     else:
                         conn.commit()
                         st.success("Query executed successfully")
-
 
         except psycopg2.Error as e:
             if "permission denied" in str(e).lower():
