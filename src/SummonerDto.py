@@ -1,5 +1,6 @@
 from api_client import API_Client
 
+
 class SummonerDto:
     def __init__(self, json):
         self.account_id = json.get("accountId")
