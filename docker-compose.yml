@@ -4,6 +4,7 @@ services:
   postgres:
     image: postgres:13
     environment:
+      env_file: .env
       ADMIN_POSTGRES_USER: ${ADMIN_POSTGRES_USER}
       ADMIN_POSTGRES_PASSWORD: ${ADMIN_POSTGRES_PASSWORD}
       READONLY_POSTGRES_USER: ${READONLY_POSTGRES_USER}
@@ -12,7 +13,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:8501 || exit 1"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 30s
       timeout: 10s
       retries: 3
