@@ -53,7 +53,7 @@ class API_Client:
         logging.info("API key loaded")
 
     def _make_request(self, url, timeout=None):
-        logging.debug(f"Making request to URL: {url}")
+        logging.debug("Making request to URL: %s", url)
 
         # Enforce rate limiting before making a request
         rl_sec()
@@ -79,7 +79,7 @@ class API_Client:
             print(f"Request timed out for url: {url}")
             return None
         except requests.exceptions.RequestException as e:
-            logging.error(f"Request exception: {e}")
+            logging.error("Request exception: %s", e)
             return None
 
     def get_summoner_by_name(self, summoner_name):
@@ -117,7 +117,3 @@ class API_Client:
             return summoner_ids
         else:
             return None
-
-
-if __name__ == "__main__":
-    client = API_Client()
