@@ -10,10 +10,12 @@ services:
       READONLY_POSTGRES_USER: ${READONLY_POSTGRES_USER}
       READONLY_POSTGRES_PASSWORD: ${READONLY_POSTGRES_PASSWORD}
       POSTGRES_DB: loldb
+    ports: 
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
+      test: ["CMD-SHELL", "pg_isready -U ${ADMIN_POSTGRES_USER}"]
       interval: 30s
       timeout: 10s
       retries: 3
