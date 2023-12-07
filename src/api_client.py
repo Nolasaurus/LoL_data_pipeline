@@ -4,6 +4,8 @@ import requests
 import logging
 import time
 
+
+
 logging.basicConfig(
     filename="app.log",
     level=logging.DEBUG,
@@ -45,14 +47,17 @@ rl_min = RateLimiter(100, 120)  # 100 requests per 2 minutes
 
 class API_Client:
     def __init__(self):
-        load_dotenv("../.env", verbose=True)
+        load_dotenv("../.env", verbose=True)  # Construct the correct path
         self.api_key = os.environ.get("RIOT_API_KEY")
         if not self.api_key:
             logging.error("API key is not set in environment variables")
             raise Exception("API key is not set in environment variables")
         logging.info("API key loaded")
+        print(f"API key: {self.api_key}")  # Add this line for debugging
 
     def _make_request(self, url, timeout=None):
+        # Rest of your code
+
         logging.debug("Making request to URL: %s", url)
 
         # Enforce rate limiting before making a request
@@ -66,8 +71,7 @@ class API_Client:
             if response.status_code == 200:
                 return response.json()
             elif response.status_code == 403:
-                print(response)
-                raise APIKeyExpiredError("403: Riot API key expired")
+                raise APIKeyExpiredError(f"403: Riot API key expired, {response}")
             elif response.status_code == 429:
                 raise RateLimitExceededError(
                     "429: Rate limited. Too many API calls recently"
@@ -84,6 +88,7 @@ class API_Client:
 
     def get_summoner_by_name(self, summoner_name):
         # Remove leading/trailing whitespaces and encode space character
+        # https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/The%20Steina?api_key=RGAPI-8e551450-57f6-469c-9ef4-758a0128e1a5
         summoner_name_encoded = summoner_name.strip().replace(" ", "%20")
         url = f"https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name_encoded}?api_key={self.api_key}"
         response = self._make_request(url, timeout=5)
