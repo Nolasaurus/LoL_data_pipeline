@@ -1,664 +1,585 @@
-from postgres_helperfile import execute_batch_query, execute_query, insert_dict
+from postgres_helperfile import SQLHelper, execute_batch_query
+
 
 def insert_match(match_dto, match_timeline_dto):
-    # Store function references in a list
-    get_functions = [
-        (get_bans, match_dto),
-        (insert_challenges, match_dto),
-        (get_champion_stats, match_timeline_dto),
-        (insert_damage_stats, match_timeline_dto),
-        (insert_match_metadata, match_dto),
-        (insert_match_events, match_timeline_dto),
-        (insert_participant_dto, match_dto),
-        (insert_participant_frames, match_timeline_dto),
-        (insert_perk_style_selections, match_dto),
-        (insert_teams, match_dto),
-        (insert_victim_damage_tables, match_timeline_dto)
-    ]
+    pass
 
-    for get_function, dto in get_functions:
-        try:
-            add_dict_to_table(get_function(dto))
-        except Exception as e:
-            print(f"Error occurred during insertion: {e}")
+def get_bans(MatchDto):
+    match_id = MatchDto.metadata.match_id
+    teams = MatchDto.info.teams
 
-
-def get_bans(match_dto):
-    match_id = match_dto['info']['gameId']
-    teams = match_dto['info']['teams']
-    
     # Prepare a list to hold all the values to be inserted
     all_values = []
     for team in teams:
-        for ban in team['bans']:
+        for ban in team.bans:
             # Append each set of values as a tuple to the list
             ban_dict = {
-                'match_id':match_id,
-                'champion_id': ban['championId'],
-                'pick_turn': ban['pickTurn']
-                }
+                "match_id": match_id,
+                "champion_id": ban.championId,
+                "pick_turn": ban.pickTurn,
+            }
             all_values.append(ban_dict)
 
     return all_values
 
-
 def get_champion_stats(match_timeline_dto):
     frames = match_timeline_dto.info.frames
-    match_id = match_timeline_dto.metadata.matchId
+    match_id = match_timeline_dto.metadata.match_id
 
     values_list = []
     for frame_number, frame in enumerate(frames):
-        for participant_id, participant_frame in frame.participantFrames.items():
-            champion_stats = participant_frame.championStats if participant_frame.championStats else {}
+        for participant_id, participant_frame in frame.participant_frames.items():
+            champion_stats = (
+                participant_frame.champion_stats
+                if participant_frame.champion_stats
+                else {}
+            )
             values = {
-                'match_id': match_id,
-                'frame_number': frame_number,
-                'participant_id': participant_id,
-                'ability_haste': getattr(champion_stats, 'abilityHaste', 0),
-                'ability_power': getattr(champion_stats, 'abilityPower', 0),
-                'armor': getattr(champion_stats, 'armor', 0),
-                'armor_pen': getattr(champion_stats, 'armorPen', 0),
-                'armor_pen_percent': getattr(champion_stats, 'armorPenPercent', 0.0),
-                'attack_damage': getattr(champion_stats, 'attackDamage', 0),
-                'attack_speed': getattr(champion_stats, 'attackSpeed', 0.0),
-                'bonus_armor_pen_percent': getattr(champion_stats, 'bonusArmorPenPercent', 0.0),
-                'bonus_magic_pen_percent': getattr(champion_stats, 'bonusMagicPenPercent', 0.0),
-                'cc_reduction': getattr(champion_stats, 'ccReduction', 0),
-                'health': getattr(champion_stats, 'health', 0),
-                'health_max': getattr(champion_stats, 'healthMax', 0),
-                'health_regen': getattr(champion_stats, 'healthRegen', 0),
-                'lifesteal': getattr(champion_stats, 'lifesteal', 0.0),
-                'magic_pen': getattr(champion_stats, 'magicPen', 0),
-                'magic_pen_percent': getattr(champion_stats, 'magicPenPercent', 0.0),
-                'magic_resist': getattr(champion_stats, 'magicResist', 0),
-                'movement_speed': getattr(champion_stats, 'movementSpeed', 0),
-                'omnivamp': getattr(champion_stats, 'omnivamp', 0.0),
-                'physical_vamp': getattr(champion_stats, 'physicalVamp', 0.0),
-                'power': getattr(champion_stats, 'power', 0),
-                'power_max': getattr(champion_stats, 'powerMax', 0),
-                'power_regen': getattr(champion_stats, 'powerRegen', 0),
-                'spell_vamp': getattr(champion_stats, 'spellVamp', 0.0)
+                "match_id": match_id,
+                "frame_number": frame_number,
+                "participant_id": participant_id,
+                "ability_haste": getattr(champion_stats, "abilityHaste", 0),
+                "ability_power": getattr(champion_stats, "abilityPower", 0),
+                "armor": getattr(champion_stats, "armor", 0),
+                "armor_pen": getattr(champion_stats, "armorPen", 0),
+                "armor_pen_percent": getattr(champion_stats, "armorPenPercent", 0.0),
+                "attack_damage": getattr(champion_stats, "attackDamage", 0),
+                "attack_speed": getattr(champion_stats, "attackSpeed", 0.0),
+                "bonus_armor_pen_percent": getattr(
+                    champion_stats, "bonusArmorPenPercent", 0.0
+                ),
+                "bonus_magic_pen_percent": getattr(
+                    champion_stats, "bonusMagicPenPercent", 0.0
+                ),
+                "cc_reduction": getattr(champion_stats, "ccReduction", 0),
+                "health": getattr(champion_stats, "health", 0),
+                "health_max": getattr(champion_stats, "healthMax", 0),
+                "health_regen": getattr(champion_stats, "healthRegen", 0),
+                "lifesteal": getattr(champion_stats, "lifesteal", 0.0),
+                "magic_pen": getattr(champion_stats, "magicPen", 0),
+                "magic_pen_percent": getattr(champion_stats, "magicPenPercent", 0.0),
+                "magic_resist": getattr(champion_stats, "magicResist", 0),
+                "movement_speed": getattr(champion_stats, "movementSpeed", 0),
+                "omnivamp": getattr(champion_stats, "omnivamp", 0.0),
+                "physical_vamp": getattr(champion_stats, "physicalVamp", 0.0),
+                "power": getattr(champion_stats, "power", 0),
+                "power_max": getattr(champion_stats, "powerMax", 0),
+                "power_regen": getattr(champion_stats, "powerRegen", 0),
+                "spell_vamp": getattr(champion_stats, "spellVamp", 0.0),
             }
 
             values_list.append(values)
 
     return values_list
 
+def get_match_metadata(match_dto):
+    metadata = getattr(match_dto, "metadata", {})
+    info = getattr(match_dto, "info", {})
 
+    match_metadata_dict = {
+        'data_version': getattr(metadata, "dataVersion", ""),
+        'match_id': getattr(metadata, "matchId", ""),
+        'game_creation': getattr(info, "gameCreation", 0),
+        'game_duration': getattr(info, "gameDuration", 0),
+        'game_end_timestamp': getattr(info, "gameEndTimestamp", 0),
+        'game_id': getattr(info, "gameId", ""),
+        'game_mode': getattr(info, "gameMode", ""),
+        'game_name': getattr(info, "gameName", ""),
+        'game_start_timestamp': getattr(info, "gameStartTimestamp", 0),
+        'game_type': getattr(info, "gameType", ""),
+        'game_version': getattr(info, "gameVersion", ""),
+        'map_id': getattr(info, "mapId", 0),
+        'platform_id': getattr(info, "platformId", ""),
+        'queue_id': getattr(info, "queueId", 0),
+        'tournament_code': getattr(info, "tournamentCode", "")
+    }
 
-def insert_match_metadata(match_dto):
-    # Assuming match_dto is a dictionary-like object
-    metadata = match_dto['metadata']
-    info = match_dto['info']
+    return match_metadata_dict
 
-    # Extracting data from match_dto
-    data_version = metadata['dataVersion']
-    match_id = metadata['matchId']
-    game_creation = info['gameCreation']
-    game_duration = info['gameDuration']
-    game_end_timestamp = info['gameEndTimestamp']
-    game_id = info['gameId']
-    game_mode = info['gameMode']
-    game_name = info['gameName']
-    game_start_timestamp = info['gameStartTimestamp']
-    game_type = info['gameType']
-    game_version = info['gameVersion']
-    map_id = info['mapId']
-    platform_id = info['platformId']
-    queue_id = info['queueId']
-    tournament_code = info.get('tournamentCode', '')  # Using get() in case tournamentCode might not be present
+def get_perk_style_selections(match_dto):
+    participants = getattr(match_dto, "info", {}).get("participants", [])
+    match_id = getattr(match_dto, "metadata", {}).get("matchId", "")
 
-    # SQL INSERT statement
-    query = """
-        INSERT INTO match_metadata 
-        (data_version, match_id, game_creation, game_duration, game_end_timestamp, game_id, game_mode, game_name, game_start_timestamp, game_type, game_version, map_id, platform_id, queue_id, tournament_code) 
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-    """
-    values = (data_version, match_id, game_creation, game_duration, game_end_timestamp, game_id, game_mode, game_name, game_start_timestamp, game_type, game_version, map_id, platform_id, queue_id, tournament_code)
-
-    # Assuming execute_query is a function that executes your SQL command
-    execute_query(query, values)
-
-
-def insert_perk_style_selections(match_dto):
-    participants = match_dto['info']['participants']
-    match_id = match_dto['metadata']['matchId']
-
+    perk_style_selections_list = []
     for participant in participants:
-        participant_id = participant['participantId']
-        for style_index, style in enumerate(participant['perks']['styles']):
-            for selection_index, selection in enumerate(style['selections']):
-                perk = selection['perk']
-                var1 = selection['var1']
-                var2 = selection['var2']
-                var3 = selection['var3']
+        participant_id = participant.get("participantId", "")
+        for style_index, style in enumerate(participant.get("perks", {}).get("styles", [])):
+            for selection_index, selection in enumerate(style.get("selections", [])):
+                perk_style_selection_dict = {
+                    'match_id': match_id,
+                    'participant_id': participant_id,
+                    'style_index': style_index,
+                    'selection_index': selection_index,
+                    'perk': selection.get("perk", 0),
+                    'var1': selection.get("var1", 0),
+                    'var2': selection.get("var2", 0),
+                    'var3': selection.get("var3", 0)
+                }
 
-                # SQL INSERT statement
-                query = """
-                    INSERT INTO perk_style_selections 
-                    (match_id, participant_id, style_index, selection_index, perk, var1, var2, var3) 
-                    VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-                """
-                values = (match_id, participant_id, style_index, selection_index, perk, var1, var2, var3)
+                perk_style_selections_list.append(perk_style_selection_dict)
 
-                # Execute the query
-                execute_query(query, values)
+    return perk_style_selections_list
 
+def get_teams(match_dto):
+    match_id = match_dto.metadata.match_id
+    teams = match_dto.info.teams
 
-
-def insert_teams(match_dto):
-    # Extracting match_id and teams information
-    match_id = match_dto['metadata']['matchId']
-    teams = match_dto['info']['teams']
-
+    teams_list = []
     for team in teams:
-        # Extracting team data
-        team_id = team['teamId']
-        win = team['win']
-        baron_first = team['objectives']['baron']['first']
-        baron_kills = team['objectives']['baron']['kills']
-        dragon_first = team['objectives']['dragon']['first']
-        dragon_kills = team['objectives']['dragon']['kills']
-        champion_first = team['objectives']['champion']['first']  
-        champion_kills = team['objectives']['champion']['kills']
-        inhibitor_first = team['objectives']['inhibitor']['first']
-        inhibitor_kills = team['objectives']['inhibitor']['kills']
-        rift_herald_first = team['objectives']['riftHerald']['first']
-        rift_herald_kills = team['objectives']['riftHerald']['kills']
-        tower_first = team['objectives']['tower']['first']
-        tower_kills = team['objectives']['tower']['kills']
+        # Extracting objectives data
+        objectives = team.objectives.objectives
 
-        # SQL INSERT statement
-        query = """
-            INSERT INTO teams 
-            (team_id, match_id, baron_first, baron_kills, champion_first, champion_kills, dragon_first, dragon_kills, inhibitor_first, inhibitor_kills, rift_herald_first, rift_herald_kills, tower_first, tower_kills, win) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
-        values = (team_id, match_id, baron_first, baron_kills, champion_first, champion_kills, dragon_first, dragon_kills, inhibitor_first, inhibitor_kills, rift_herald_first, rift_herald_kills, tower_first, tower_kills, win)
+        team_data = {
+            'team_id': team.team_id,
+            'match_id': match_id,
+            'baron_first': objectives['baron'].first if 'baron' in objectives else False,
+            'baron_kills': objectives['baron'].kills if 'baron' in objectives else 0,
+            'dragon_first': objectives['dragon'].first if 'dragon' in objectives else False,
+            'dragon_kills': objectives['dragon'].kills if 'dragon' in objectives else 0,
+            'champion_first': objectives['champion'].first if 'champion' in objectives else False,
+            'champion_kills': objectives['champion'].kills if 'champion' in objectives else 0,
+            'inhibitor_first': objectives['inhibitor'].first if 'inhibitor' in objectives else False,
+            'inhibitor_kills': objectives['inhibitor'].kills if 'inhibitor' in objectives else 0,
+            'rift_herald_first': objectives['riftHerald'].first if 'riftHerald' in objectives else False,
+            'rift_herald_kills': objectives['riftHerald'].kills if 'riftHerald' in objectives else 0,
+            'tower_first': objectives['tower'].first if 'tower' in objectives else False,
+            'tower_kills': objectives['tower'].kills if 'tower' in objectives else 0,
+            'win': team.win
+        }
 
-        # Execute the query
-        execute_query(query, values)
+        teams_list.append(team_data)
 
+    return teams_list
 
-def insert_damage_stats(match_timeline_dto):
-    frames = match_timeline_dto['info']['frames']
-    match_id = match_timeline_dto['metadata']['matchId']
+def get_damage_stats(match_timeline_dto):
+    frames = match_timeline_dto["info"]["frames"]
+    match_id = match_timeline_dto["metadata"]["matchId"]
 
+    damage_stats_list = []
     for frame_number, frame in enumerate(frames):
-        participant_frames = frame['participantFrames'].values()  # Assuming participantFrames is a dict
+        participant_frames = frame["participantFrames"].values()  # Assuming participantFrames is a dict
 
         for participant_frame in participant_frames:
-            participant_id = participant_frame['participantId']
-            damage_stats = participant_frame['damageStats']
+            participant_id = participant_frame["participantId"]
+            damage_stats = participant_frame["damageStats"]
 
-            # Extracting all required fields
-            magic_damage_done = damage_stats['magicDamageDone']
-            magic_damage_done_to_champions = damage_stats['magicDamageDoneToChampions']
-            magic_damage_taken = damage_stats['magicDamageTaken']
-            physical_damage_done = damage_stats['physicalDamageDone']
-            physical_damage_done_to_champions = damage_stats['physicalDamageDoneToChampions']
-            physical_damage_taken = damage_stats['physicalDamageTaken']
-            total_damage_done = damage_stats['totalDamageDone']
-            total_damage_done_to_champions = damage_stats['totalDamageDoneToChampions']
-            total_damage_taken = damage_stats['totalDamageTaken']
-            true_damage_done = damage_stats['trueDamageDone']
-            true_damage_done_to_champions = damage_stats['trueDamageDoneToChampions']
-            true_damage_taken = damage_stats['trueDamageTaken']
+            damage_stat_dict = {
+                'match_id': match_id,
+                'frame_number': frame_number,
+                'participant_id': participant_id,
+                'magic_damage_done': damage_stats["magicDamageDone"],
+                'magic_damage_done_to_champions': damage_stats["magicDamageDoneToChampions"],
+                'magic_damage_taken': damage_stats["magicDamageTaken"],
+                'physical_damage_done': damage_stats["physicalDamageDone"],
+                'physical_damage_done_to_champions': damage_stats["physicalDamageDoneToChampions"],
+                'physical_damage_taken': damage_stats["physicalDamageTaken"],
+                'total_damage_done': damage_stats["totalDamageDone"],
+                'total_damage_done_to_champions': damage_stats["totalDamageDoneToChampions"],
+                'total_damage_taken': damage_stats["totalDamageTaken"],
+                'true_damage_done': damage_stats["trueDamageDone"],
+                'true_damage_done_to_champions': damage_stats["trueDamageDoneToChampions"],
+                'true_damage_taken': damage_stats["trueDamageTaken"]
+            }
 
-            # SQL INSERT statement
-            query = """
-                INSERT INTO damage_stats 
-                (match_id, frame_number, participant_id, magic_damage_done, magic_damage_done_to_champions, magic_damage_taken, physical_damage_done, physical_damage_done_to_champions, physical_damage_taken, total_damage_done, total_damage_done_to_champions, total_damage_taken, true_damage_done, true_damage_done_to_champions, true_damage_taken) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            values = (match_id, frame_number, participant_id, magic_damage_done, magic_damage_done_to_champions, magic_damage_taken, physical_damage_done, physical_damage_done_to_champions, physical_damage_taken, total_damage_done, total_damage_done_to_champions, total_damage_taken, true_damage_done, true_damage_done_to_champions, true_damage_taken)
+            damage_stats_list.append(damage_stat_dict)
 
-            # Execute the query
-            execute_query(query, values)
+    return damage_stats_list
 
+def get_victim_damage(match_timeline_dto):
+    frames = match_timeline_dto["info"]["frames"]
+    match_id = match_timeline_dto["metadata"]["matchId"]
 
-
-def insert_victim_damage_tables(match_timeline_dto):
-    frames = match_timeline_dto['info']['frames']
-    match_id = match_timeline_dto['metadata']['matchId']
+    damage_received_list = []
+    damage_dealt_list = []
 
     for frame_number, frame in enumerate(frames):
-        for event_number, event in enumerate(frame['events']):
-            if event['type'] == "CHAMPION_KILL":
-                for damage_number, damage_received in enumerate(event['victimDamageReceived']):
-                    participant_id = damage_received['participantId']
-                    basic = damage_received['basic']
-                    magic_damage = damage_received['magicDamage']
-                    physical_damage = damage_received['physicalDamage']
-                    name = damage_received['name']
-                    spell_name = damage_received.get('spellName', '')  # using get() in case spellName is not present
-                    spell_slot = damage_received.get('spellSlot', 0)  # defaulting to 0 if not present
-                    true_damage = damage_received['trueDamage']
-                    damage_type = damage_received['type']
+        for event_number, event in enumerate(frame["events"]):
+            if event["type"] == "CHAMPION_KILL":
+                for damage_number, damage_received in enumerate(event["victimDamageReceived"]):
+                    received_values = {
+                        "match_id": match_id,
+                        "participant_id": damage_received["participantId"],
+                        "basic": damage_received["basic"],
+                        "magic_damage": damage_received["magicDamage"],
+                        "physical_damage": damage_received["physicalDamage"],
+                        "name": damage_received["name"],
+                        "spell_name": damage_received.get("spellName", ""),
+                        "spell_slot": damage_received.get("spellSlot", 0),
+                        "true_damage": damage_received["trueDamage"],
+                        "damage_type": damage_received["type"],
+                    }
 
-                    # SQL INSERT statement
-                    query = """
-                        INSERT INTO victim_damage_received 
-                        (match_id, frame_number, event_number, damage_number, participant_id, basic, magic_damage, physical_damage, name, spell_name, spell_slot, true_damage, type) 
-                        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                    """
-                    values = (match_id, frame_number, event_number, damage_number, participant_id, basic, magic_damage, physical_damage, name, spell_name, spell_slot, true_damage, damage_type)
+                    damage_received_list.append(received_values)
 
-                    # Execute the query
-                    execute_query(query, values)
+                for damage_number, damage_dealt in enumerate(event["victimDamageDealt"]):
+                    dealt_values = {
+                        "match_id": match_id,
+                        "participant_id": damage_dealt["participantId"],
+                        "basic": damage_dealt["basic"],
+                        "magic_damage": damage_dealt["magicDamage"],
+                        "physical_damage": damage_dealt["physicalDamage"],
+                        "name": damage_dealt["name"],
+                        "spell_name": damage_dealt.get("spellName", ""),
+                        "spell_slot": damage_dealt.get("spellSlot", 0),
+                        "true_damage": damage_dealt["trueDamage"],
+                        "damage_type": damage_dealt["type"],
+                    }
 
-                if 'victimDamageDealt' in event:
-                    for damage_number, damage_received in enumerate(event['victimDamageDealt']):
-                        participant_id = damage_received['participantId']
-                        basic = damage_received['basic']
-                        magic_damage = damage_received['magicDamage']
-                        physical_damage = damage_received['physicalDamage']
-                        name = damage_received['name']
-                        spell_name = damage_received.get('spellName', '')  # using get() in case spellName is not present
-                        spell_slot = damage_received.get('spellSlot', 0)  # defaulting to 0 if not present
-                        true_damage = damage_received['trueDamage']
-                        damage_type = damage_received['type']
+                    damage_dealt_list.append(dealt_values)
 
-                        # SQL INSERT statement
-                        query = """
-                            INSERT INTO victim_damage_received 
-                            (match_id, frame_number, event_number, damage_number, participant_id, basic, magic_damage, physical_damage, name, spell_name, spell_slot, true_damage, type) 
-                            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-                        """
-                        values = (match_id, frame_number, event_number, damage_number, participant_id, basic, magic_damage, physical_damage, name, spell_name, spell_slot, true_damage, damage_type)
+    return damage_received_list, damage_dealt_list
 
-                        # Execute the query
-                        execute_query(query, values)
+def get_challenges(match_dto):
+    challenges_list = []
 
-
-def insert_challenges(match_dto):
-    participants = match_dto['info']['participants']
-    match_id = match_dto['metadata']['matchId']
-
+    participants = match_dto["info"]["participants"]
     for participant in participants:
-        participant_id = participant['participantId']
-        challenges = participant['challenges']
+        challenges = participant["challenges"]
+        
+        values = {
+            "match_id": match_dto["metadata"]["matchId"],
+            "participant_id": participant["participantId"],
+            "assistStreakCount": challenges.get("assistStreakCount", 0),
+            "abilityUses": challenges.get("abilityUses", 0),
+            "acesBefore15Minutes": challenges.get("acesBefore15Minutes", 0),
+            "alliedJungleMonsterKills": challenges.get("alliedJungleMonsterKills", 0),
+            "baronTakedowns": challenges.get("baronTakedowns", 0),
+            "blastConeOppositeOpponentCount": challenges.get("blastConeOppositeOpponentCount", 0),
+            "bountyGold": challenges.get("bountyGold", 0),
+            "buffsStolen": challenges.get("buffsStolen", 0),
+            "completeSupportQuestInTime": challenges.get("completeSupportQuestInTime", 0),
+            "controlWardsPlaced": challenges.get("controlWardsPlaced", 0),
+            "damagePerMinute": challenges.get("damagePerMinute", 0.0),
+            "damageTakenOnTeamPercentage": challenges.get("damageTakenOnTeamPercentage", 0.0),
+            "dancedWithRiftHerald": challenges.get("dancedWithRiftHerald", 0),
+            "deathsByEnemyChamps": challenges.get("deathsByEnemyChamps", 0),
+            "dodgeSkillShotsSmallWindow": challenges.get("dodgeSkillShotsSmallWindow", 0),
+            "doubleAces": challenges.get("doubleAces", 0),
+            "dragonTakedowns": challenges.get("dragonTakedowns", 0),
+            "earlyLaningPhaseGoldExpAdvantage": challenges.get("earlyLaningPhaseGoldExpAdvantage", 0.0),
+            "effectiveHealAndShielding": challenges.get("effectiveHealAndShielding", 0),
+            "elderDragonKillsWithOpposingSoul": challenges.get("elderDragonKillsWithOpposingSoul", 0),
+            "elderDragonMultikills": challenges.get("elderDragonMultikills", 0),
+            "enemyChampionImmobilizations": challenges.get("enemyChampionImmobilizations", 0),
+            "enemyJungleMonsterKills": challenges.get("enemyJungleMonsterKills", 0),
+            "epicMonsterKillsNearEnemyJungler": challenges.get("epicMonsterKillsNearEnemyJungler", 0),
+            "epicMonsterKillsWithin30SecondsOfSpawn": challenges.get("epicMonsterKillsWithin30SecondsOfSpawn", 0),
+            "epicMonsterSteals": challenges.get("epicMonsterSteals", 0),
+            "epicMonsterStolenWithoutSmite": challenges.get("epicMonsterStolenWithoutSmite", 0),
+            "firstTurretKilled": challenges.get("firstTurretKilled", 0),
+            "flawlessAces": challenges.get("flawlessAces", 0),
+            "fullTeamTakedown": challenges.get("fullTeamTakedown", 0),
+            "gameLength": challenges.get("gameLength", 0.0),
+            "getTakedownsInAllLanesEarlyJungleAsLaner": challenges.get("getTakedownsInAllLanesEarlyJungleAsLaner", 0),
+            "goldPerMinute": challenges.get("goldPerMinute", 0.0),
+            "hadOpenNexus": challenges.get("hadOpenNexus", 0),
+            "immobilizeAndKillWithAlly": challenges.get("immobilizeAndKillWithAlly", 0),
+            "initialBuffCount": challenges.get("initialBuffCount", 0),
+            "initialCrabCount": challenges.get("initialCrabCount", 0),
+            "jungleCsBefore10Minutes": challenges.get("jungleCsBefore10Minutes", 0),
+            "junglerTakedownsNearDamagedEpicMonster": challenges.get("junglerTakedownsNearDamagedEpicMonster", 0),
+            "kTurretsDestroyedBeforePlatesFall": challenges.get("kTurretsDestroyedBeforePlatesFall", 0),
+            "kda": challenges.get("kda", 0.0),
+            "killAfterHiddenWithAlly": challenges.get("killAfterHiddenWithAlly", 0),
+            "killParticipation": challenges.get("killParticipation", 0.0),
+            "killedChampTookFullTeamDamageSurvived": challenges.get("killedChampTookFullTeamDamageSurvived", 0),
+            "killingSprees": challenges.get("killingSprees", 0),
+            "killsNearEnemyTurret": challenges.get("killsNearEnemyTurret", 0),
+            "killsOnOtherLanesEarlyJungleAsLaner": challenges.get("killsOnOtherLanesEarlyJungleAsLaner", 0),
+            "killsOnRecentlyHealedByAramPack": challenges.get("killsOnRecentlyHealedByAramPack", 0),
+            "killsUnderOwnTurret": challenges.get("killsUnderOwnTurret", 0),
+            "killsWithHelpFromEpicMonster": challenges.get("killsWithHelpFromEpicMonster", 0),
+            "knockEnemyIntoTeamAndKill": challenges.get("knockEnemyIntoTeamAndKill", 0),
+            "landSkillShotsEarlyGame": challenges.get("landSkillShotsEarlyGame", 0),
+            "laneMinionsFirst10Minutes": challenges.get("laneMinionsFirst10Minutes", 0),
+            "laningPhaseGoldExpAdvantage": challenges.get("laningPhaseGoldExpAdvantage", 0.0),
+            "legendaryCount": challenges.get("legendaryCount", 0),
+            "lostAnInhibitor": challenges.get("lostAnInhibitor", 0),
+            "maxCsAdvantageOnLaneOpponent": challenges.get("maxCsAdvantageOnLaneOpponent", 0),
+            "maxKillDeficit": challenges.get("maxKillDeficit", 0),
+            "maxLevelLeadLaneOpponent": challenges.get("maxLevelLeadLaneOpponent", 0),
+            "mejaisFullStackInTime": challenges.get("mejaisFullStackInTime", 0),
+            "moreEnemyJungleThanOpponent": challenges.get("moreEnemyJungleThanOpponent", 0),
+            "multiKillOneSpell": challenges.get("multiKillOneSpell", 0),
+            "multiTurretRiftHeraldCount": challenges.get("multiTurretRiftHeraldCount", 0),
+            "multikills": challenges.get("multikills", 0),
+            "multikillsAfterAggressiveFlash": challenges.get("multikillsAfterAggressiveFlash", 0),
+            "mythicItemUsed": challenges.get("mythicItemUsed", 0),
+            "outerTurretExecutesBefore10Minutes": challenges.get("outerTurretExecutesBefore10Minutes", 0),
+            "outnumberedKills": challenges.get("outnumberedKills", 0),
+            "outnumberedNexusKill": challenges.get("outnumberedNexusKill", 0),
+            "perfectDragonSoulsTaken": challenges.get("perfectDragonSoulsTaken", 0),
+            "perfectGame": challenges.get("perfectGame", 0),
+            "pickKillWithAlly": challenges.get("pickKillWithAlly", 0),
+            "poroExplosions": challenges.get("poroExplosions", 0),
+            "quickCleanse": challenges.get("quickCleanse", 0),
+            "quickFirstTurret": challenges.get("quickFirstTurret", 0),
+            "quickSoloKills": challenges.get("quickSoloKills", 0),
+            "riftHeraldTakedowns": challenges.get("riftHeraldTakedowns", 0),
+            "saveAllyFromDeath": challenges.get("saveAllyFromDeath", 0),
+            "scuttleCrabKills": challenges.get("scuttleCrabKills", 0),
+            "skillshotsDodged": challenges.get("skillshotsDodged", 0),
+            "skillshotsHit": challenges.get("skillshotsHit", 0),
+            "snowballsHit": challenges.get("snowballsHit", 0),
+            "soloBaronKills": challenges.get("soloBaronKills", 0),
+            "soloKills": challenges.get("soloKills", 0),
+            "stealthWardsPlaced": challenges.get("stealthWardsPlaced", 0),
+            "survivedSingleDigitHpCount": challenges.get("survivedSingleDigitHpCount", 0),
+            "survivedThreeImmobilizesInFight": challenges.get("survivedThreeImmobilizesInFight", 0),
+            "takedownOnFirstTurret": challenges.get("takedownOnFirstTurret", 0),
+            "takedowns": challenges.get("takedowns", 0),
+            "takedownsAfterGainingLevelAdvantage": challenges.get("takedownsAfterGainingLevelAdvantage", 0),
+            "takedownsBeforeJungleMinionSpawn": challenges.get("takedownsBeforeJungleMinionSpawn", 0),
+            "takedownsFirstXMinutes": challenges.get("takedownsFirstXMinutes", 0),
+            "takedownsInAlcove": challenges.get("takedownsInAlcove", 0),
+            "takedownsInEnemyFountain": challenges.get("takedownsInEnemyFountain", 0),
+            "teamBaronKills": challenges.get("teamBaronKills", 0),
+            "teamDamagePercentage": challenges.get("teamDamagePercentage", 0.0),
+            "teamElderDragonKills": challenges.get("teamElderDragonKills", 0),
+            "teamRiftHeraldKills": challenges.get("teamRiftHeraldKills", 0),
+            "tookLargeDamageSurvived": challenges.get("tookLargeDamageSurvived", 0),
+            "turretPlatesTaken": challenges.get("turretPlatesTaken", 0),
+            "turretTakedowns": challenges.get("turretTakedowns", 0),
+            "turretsTakenWithRiftHerald": challenges.get("turretsTakenWithRiftHerald", 0),
+            "twentyMinionsIn3SecondsCount": challenges.get("twentyMinionsIn3SecondsCount", 0),
+            "twoWardsOneSweeperCount": challenges.get("twoWardsOneSweeperCount", 0),
+            "unseenRecalls": challenges.get("unseenRecalls", 0),
+            "visionScoreAdvantageLaneOpponent": challenges.get("visionScoreAdvantageLaneOpponent", 0.0),
+            "visionScorePerMinute": challenges.get("visionScorePerMinute", 0.0),
+            "wardTakedowns": challenges.get("wardTakedowns", 0),
+            "wardTakedownsBefore20m": challenges.get("wardTakedownsBefore20m", 0),
+            "wardsGuarded": challenges.get("wardsGuarded", 0),
+        }
 
-        # SQL INSERT statement
+        challenges_list.append(values)
 
-        # SQL INSERT statement
-        query = """
-            INSERT INTO challenges 
-            (match_id, participant_id, assist_streak_count, ability_uses, aces_before_15_minutes, allied_jungle_monster_kills, baron_takedowns, blast_cone_opposite_opponent_count, bounty_gold, buffs_stolen, complete_support_quest_in_time, control_wards_placed, damage_per_minute, damage_taken_on_team_percentage, danced_with_rift_herald, deaths_by_enemy_champs, dodge_skill_shots_small_window, double_aces, dragon_takedowns, early_laning_phase_gold_exp_advantage, effective_heal_and_shielding, elder_dragon_kills_with_opposing_soul, elder_dragon_multikills, enemy_champion_immobilizations, enemy_jungle_monster_kills, epic_monster_kills_near_enemy_jungler, epic_monster_kills_within_30_seconds_of_spawn, epic_monster_steals, epic_monster_stolen_without_smite, first_turret_killed, flawless_aces, full_team_takedown, game_length, get_takedowns_in_all_lanes_early_jungle_as_laner, gold_per_minute, had_open_nexus, immobilize_and_kill_with_ally, initial_buff_count, initial_crab_count, jungle_cs_before_10_minutes, jungler_takedowns_near_damaged_epic_monster, k_turrets_destroyed_before_plates_fall, kda, kill_after_hidden_with_ally, kill_participation, killed_champ_took_full_team_damage_survived, killing_sprees, kills_near_enemy_turret, kills_on_other_lanes_early_jungle_as_laner, kills_on_recently_healed_by_aram_pack, kills_under_own_turret, kills_with_help_from_epic_monster, knock_enemy_into_team_and_kill, land_skill_shots_early_game, lane_minions_first_10_minutes, laning_phase_gold_exp_advantage, legendary_count, lost_an_inhibitor, max_cs_advantage_on_lane_opponent, max_kill_deficit, max_level_lead_lane_opponent, mejais_full_stack_in_time, more_enemy_jungle_than_opponent, multi_kill_one_spell, multi_turret_rift_herald_count, multikills, multikills_after_aggressive_flash, mythic_item_used, outer_turret_executes_before_10_minutes, outnumbered_kills, outnumbered_nexus_kill, perfect_dragon_souls_taken, perfect_game, pick_kill_with_ally, poro_explosions, quick_cleanse, quick_first_turret, quick_solo_kills, rift_herald_takedowns, save_ally_from_death, scuttle_crab_kills, skillshots_dodged, skillshots_hit, snowballs_hit, solo_baron_kills, solo_kills, stealth_wards_placed, survived_single_digit_hp_count, survived_three_immobilizes_in_fight, takedown_on_first_turret, takedowns, takedowns_after_gaining_level_advantage, takedowns_before_jungle_minion_spawn, takedowns_first_x_minutes, takedowns_in_alcove, takedowns_in_enemy_fountain, team_baron_kills, team_damage_percentage, team_elder_dragon_kills, team_rift_herald_kills, took_large_damage_survived, turret_plates_taken, turret_takedowns, turrets_taken_with_rift_herald, twenty_minions_in_3_seconds_count, two_wards_one_sweeper_count, unseen_recalls, vision_score_advantage_lane_opponent, vision_score_per_minute, ward_takedowns, ward_takedowns_before_20m, wards_guarded)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        """
+    return challenges_list
 
-        values = (
-            match_id,
-            participant_id,
-            challenges.get('assistStreakCount', 0),
-            challenges.get('abilityUses', 0),
-            challenges.get('acesBefore15Minutes', 0),
-            challenges.get('alliedJungleMonsterKills', 0),
-            challenges.get('baronTakedowns', 0),
-            challenges.get('blastConeOppositeOpponentCount', 0),
-            challenges.get('bountyGold', 0),
-            challenges.get('buffsStolen', 0),
-            challenges.get('completeSupportQuestInTime', 0),
-            challenges.get('controlWardsPlaced', 0),
-            challenges.get('damagePerMinute', 0.0),
-            challenges.get('damageTakenOnTeamPercentage', 0.0),
-            challenges.get('dancedWithRiftHerald', 0),
-            challenges.get('deathsByEnemyChamps', 0),
-            challenges.get('dodgeSkillShotsSmallWindow', 0),
-            challenges.get('doubleAces', 0),
-            challenges.get('dragonTakedowns', 0),
-            challenges.get('earlyLaningPhaseGoldExpAdvantage', 0.0),
-            challenges.get('effectiveHealAndShielding', 0),
-            challenges.get('elderDragonKillsWithOpposingSoul', 0),
-            challenges.get('elderDragonMultikills', 0),
-            challenges.get('enemyChampionImmobilizations', 0),
-            challenges.get('enemyJungleMonsterKills', 0),
-            challenges.get('epicMonsterKillsNearEnemyJungler', 0),
-            challenges.get('epicMonsterKillsWithin30SecondsOfSpawn', 0),
-            challenges.get('epicMonsterSteals', 0),
-            challenges.get('epicMonsterStolenWithoutSmite', 0),
-            challenges.get('firstTurretKilled', 0),
-            challenges.get('flawlessAces', 0),
-            challenges.get('fullTeamTakedown', 0),
-            challenges.get('gameLength', 0.0),
-            challenges.get('getTakedownsInAllLanesEarlyJungleAsLaner', 0),
-            challenges.get('goldPerMinute', 0.0),
-            challenges.get('hadOpenNexus', 0),
-            challenges.get('immobilizeAndKillWithAlly', 0),
-            challenges.get('initialBuffCount', 0),
-            challenges.get('initialCrabCount', 0),
-            challenges.get('jungleCsBefore10Minutes', 0),
-            challenges.get('junglerTakedownsNearDamagedEpicMonster', 0),
-            challenges.get('kTurretsDestroyedBeforePlatesFall', 0),
-            challenges.get('kda', 0.0),
-            challenges.get('killAfterHiddenWithAlly', 0),
-            challenges.get('killParticipation', 0.0),
-            challenges.get('killedChampTookFullTeamDamageSurvived', 0),
-            challenges.get('killingSprees', 0),
-            challenges.get('killsNearEnemyTurret', 0),
-            challenges.get('killsOnOtherLanesEarlyJungleAsLaner', 0),
-            challenges.get('killsOnRecentlyHealedByAramPack', 0),
-            challenges.get('killsUnderOwnTurret', 0),
-            challenges.get('killsWithHelpFromEpicMonster', 0),
-            challenges.get('knockEnemyIntoTeamAndKill', 0),
-            challenges.get('landSkillShotsEarlyGame', 0),
-            challenges.get('laneMinionsFirst10Minutes', 0),
-            challenges.get('laningPhaseGoldExpAdvantage', 0.0),
-            challenges.get('legendaryCount', 0),
-            challenges.get('lostAnInhibitor', 0),
-            challenges.get('maxCsAdvantageOnLaneOpponent', 0),
-            challenges.get('maxKillDeficit', 0),
-            challenges.get('maxLevelLeadLaneOpponent', 0),
-            challenges.get('mejaisFullStackInTime', 0),
-            challenges.get('moreEnemyJungleThanOpponent', 0),
-            challenges.get('multiKillOneSpell', 0),
-            challenges.get('multiTurretRiftHeraldCount', 0),
-            challenges.get('multikills', 0),
-            challenges.get('multikillsAfterAggressiveFlash', 0),
-            challenges.get('mythicItemUsed', 0),
-            challenges.get('outerTurretExecutesBefore10Minutes', 0),
-            challenges.get('outnumberedKills', 0),
-            challenges.get('outnumberedNexusKill', 0),
-            challenges.get('perfectDragonSoulsTaken', 0),
-            challenges.get('perfectGame', 0),
-            challenges.get('pickKillWithAlly', 0),
-            challenges.get('poroExplosions', 0),
-            challenges.get('quickCleanse', 0),
-            challenges.get('quickFirstTurret', 0),
-            challenges.get('quickSoloKills', 0),
-            challenges.get('riftHeraldTakedowns', 0),
-            challenges.get('saveAllyFromDeath', 0),
-            challenges.get('scuttleCrabKills', 0),
-            challenges.get('skillshotsDodged', 0),
-            challenges.get('skillshotsHit', 0),
-            challenges.get('snowballsHit', 0),
-            challenges.get('soloBaronKills', 0),
-            challenges.get('soloKills', 0),
-            challenges.get('stealthWardsPlaced', 0),
-            challenges.get('survivedSingleDigitHpCount', 0),
-            challenges.get('survivedThreeImmobilizesInFight', 0),
-            challenges.get('takedownOnFirstTurret', 0),
-            challenges.get('takedowns', 0),
-            challenges.get('takedownsAfterGainingLevelAdvantage', 0),
-            challenges.get('takedownsBeforeJungleMinionSpawn', 0),
-            challenges.get('takedownsFirstXMinutes', 0),
-            challenges.get('takedownsInAlcove', 0),
-            challenges.get('takedownsInEnemyFountain', 0),
-            challenges.get('teamBaronKills', 0),
-            challenges.get('teamDamagePercentage', 0.0),
-            challenges.get('teamElderDragonKills', 0),
-            challenges.get('teamRiftHeraldKills', 0),
-            challenges.get('tookLargeDamageSurvived', 0),
-            challenges.get('turretPlatesTaken', 0),
-            challenges.get('turretTakedowns', 0),
-            challenges.get('turretsTakenWithRiftHerald', 0),
-            challenges.get('twentyMinionsIn3SecondsCount', 0),
-            challenges.get('twoWardsOneSweeperCount', 0),
-            challenges.get('unseenRecalls', 0),
-            challenges.get('visionScoreAdvantageLaneOpponent', 0.0),
-            challenges.get('visionScorePerMinute', 0.0),
-            challenges.get('wardTakedowns', 0),
-            challenges.get('wardTakedownsBefore20m', 0),
-            challenges.get('wardsGuarded', 0)
-        )
+def get_match_events(match_timeline_dto):
+    frames = match_timeline_dto.info.frames
+    match_id = match_timeline_dto.metadata.matchId
 
-        # Execute the query
-        execute_query(query, values)
-
-
-def insert_match_events(match_timeline_dto):
-    frames = match_timeline_dto['info']['frames']
-    match_id = match_timeline_dto['metadata']['matchId']
-
+    events_list = []
     for frame_number, frame in enumerate(frames):
-        for event_number, event in enumerate(frame['events']):
-            # Extract event data
-            real_timestamp = event.get('realTimestamp')
-            timestamp = event.get('timestamp')
-            event_type = event.get('type')
-            item_id = event.get('itemId', None)
-            participant_id = event.get('participantId', None)
-            level_up_type = event.get('levelUpType', '')
-            skill_slot = event.get('skillSlot', None)
-            creator_id = event.get('creatorId', None)
-            ward_type = event.get('wardType', '')
-            level = event.get('level', None)
-            bounty = event.get('bounty', None)
-            kill_streak_length = event.get('killStreakLength', None)
-            killer_id = event.get('killerId', None)
-            position_x = event.get('position', {}).get('x', None)
-            position_y = event.get('position', {}).get('y', None)
-            victim_id = event.get('victimId', None)
-            kill_type = event.get('killType', '')
-            lane_type = event.get('laneType', '')
-            team_id = event.get('teamId', None)
-            multi_kill_length = event.get('multiKillLength', None)
-            killer_team_id = event.get('killerTeamId', None)
-            monster_type = event.get('monsterType', '')
-            monster_sub_type = event.get('monsterSubType', '')
-            building_type = event.get('buildingType', '')
-            tower_type = event.get('towerType', '')
-            after_id = event.get('afterId', None)
-            before_id = event.get('beforeId', None)
-            gold_gain = event.get('goldGain', None)
-            game_id = event.get('gameId', None)
-            winning_team = event.get('winningTeam', None)
-            transform_type = event.get('transformType', '')
-            name = event.get('name', '')
-            shutdown_bounty = event.get('shutdownBounty', None)
-            actual_start_time = event.get('actualStartTime', None)
+        for event_number, event in enumerate(frame.events):
+            events_dict = {
+                'match_id': match_id,
+                'frame_number': frame_number,
+                'event_number': event_number,
+                'real_timestamp': getattr(event, "realTimestamp", None),
+                'timestamp': getattr(event, "timestamp", None),
+                'type': getattr(event, "type", None),
+                'item_id': getattr(event, "itemId", None),
+                'participant_id': getattr(event, "participantId", None),
+                'level_up_type': getattr(event, "levelUpType", ""),
+                'skill_slot': getattr(event, "skillSlot", None),
+                'creator_id': getattr(event, "creatorId", None),
+                'ward_type': getattr(event, "wardType", ""),
+                'level': getattr(event, "level", None),
+                'bounty': getattr(event, "bounty", None),
+                'kill_streak_length': getattr(event, "killStreakLength", None),
+                'killer_id': getattr(event, "killerId", None),
+                'position_x': getattr(event, "position", {}).get("x", None),
+                'position_y': getattr(event, "position", {}).get("y", None),
+                'victim_id': getattr(event, "victimId", None),
+                'kill_type': getattr(event, "killType", ""),
+                'lane_type': getattr(event, "laneType", ""),
+                'team_id': getattr(event, "teamId", None),
+                'multi_kill_length': getattr(event, "multiKillLength", None),
+                'killer_team_id': getattr(event, "killerTeamId", None),
+                'monster_type': getattr(event, "monsterType", ""),
+                'monster_sub_type': getattr(event, "monsterSubType", ""),
+                'building_type': getattr(event, "buildingType", ""),
+                'tower_type': getattr(event, "towerType", ""),
+                'after_id': getattr(event, "afterId", None),
+                'before_id': getattr(event, "beforeId", None),
+                'gold_gain': getattr(event, "goldGain", None),
+                'game_id': getattr(event, "gameId", None),
+                'winning_team': getattr(event, "winningTeam", None),
+                'transform_type': getattr(event, "transformType", ""),
+                'name': getattr(event, "name", ""),
+                'shutdown_bounty': getattr(event, "shutdownBounty", None),
+                'actual_start_time': getattr(event, "actualStartTime", None)
+            }
 
-            query = """
-                INSERT INTO match_events 
-                (match_id, frame_number, event_number, real_timestamp, timestamp, type, item_id, participant_id, level_up_type, skill_slot, creator_id, ward_type, level, bounty, kill_streak_length, killer_id, position_x, position_y, victim_id, kill_type, lane_type, team_id, multi_kill_length, killer_team_id, monster_type, monster_sub_type, building_type, tower_type, after_id, before_id, gold_gain, game_id, winning_team, transform_type, name, shutdown_bounty, actual_start_time) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
+            events_list.append(events_dict)
 
-            values = (
-                match_id, 
-                frame_number, 
-                event_number, 
-                real_timestamp, 
-                timestamp, 
-                event_type, 
-                item_id, 
-                participant_id,
-                event.get('levelUpType', ''),
-                event.get('skillSlot', 0),
-                event.get('creatorId', 0),
-                event.get('wardType', ''),
-                event.get('level', 0),
-                event.get('bounty', 0),
-                event.get('killStreakLength', 0),
-                event.get('killerId', 0),
-                event.get('position', {}).get('x', 0),
-                event.get('position', {}).get('y', 0),
-                event.get('victimId', 0),
-                event.get('killType', ''),
-                event.get('laneType', ''),
-                event.get('teamId', 0),
-                event.get('multiKillLength', 0),
-                event.get('killerTeamId', 0),
-                event.get('monsterType', ''),
-                event.get('monsterSubType', ''),
-                event.get('buildingType', ''),
-                event.get('towerType', ''),
-                event.get('afterId', 0),
-                event.get('beforeId', 0),
-                event.get('goldGain', 0),
-                event.get('gameId', 0),
-                event.get('winningTeam', 0),
-                event.get('transformType', ''),
-                event.get('name', ''),
-                event.get('shutdownBounty', 0),
-                event.get('actualStartTime', 0)
-            )
+    return events_list
 
-            # Execute the query
-            execute_query(query, values)
+def get_participant_dto(match_dto):
+    participants = match_dto["info"]["participants"]
+    match_id = match_dto["metadata"]["matchId"]
 
-
-def insert_participant_dto(match_dto):
-    participants = match_dto['info']['participants']
-    match_id = match_dto['metadata']['matchId']
+    participant_dto_list = []
 
     for participant in participants:
         # Extracting all necessary participant data using .get() to avoid KeyError
-        values = (
-            match_id,
-            participant.get('participantId', ''),
-            participant.get('assists', ''),
-            participant.get('baronKills', ''),
-            participant.get('bountyLevel', ''),
-            participant.get('champExperience', ''),
-            participant.get('champLevel', ''),
-            participant.get('championId', ''),
-            participant.get('championName', ''),
-            participant.get('championTransform', ''),
-            participant.get('consumablesPurchased', ''),
-            participant.get('damageDealtToBuildings', ''),
-            participant.get('damageDealtToObjectives', ''),
-            participant.get('damageDealtToTurrets', ''),
-            participant.get('damageSelfMitigated', ''),
-            participant.get('deaths', ''),
-            participant.get('detectorWardsPlaced', ''),
-            participant.get('doubleKills', ''),
-            participant.get('dragonKills', ''),
-            participant.get('firstBloodAssist', ''),
-            participant.get('firstBloodKill', ''),
-            participant.get('firstTowerAssist', ''),
-            participant.get('firstTowerKill', ''),
-            participant.get('gameEndedInEarlySurrender', ''),
-            participant.get('gameEndedInSurrender', ''),
-            participant.get('goldEarned', ''),
-            participant.get('goldSpent', ''),
-            participant.get('individualPosition', ''),
-            participant.get('inhibitorKills', ''),
-            participant.get('inhibitorTakedowns', ''),
-            participant.get('inhibitorsLost', ''),
-            participant.get('item0', ''),
-            participant.get('item1', ''),
-            participant.get('item2', ''),
-            participant.get('item3', ''),
-            participant.get('item4', ''),
-            participant.get('item5', ''),
-            participant.get('item6', ''),
-            participant.get('itemsPurchased', ''),
-            participant.get('killingSprees', ''),
-            participant.get('kills', ''),
-            participant.get('lane', ''),
-            participant.get('largestCriticalStrike', ''),
-            participant.get('largestKillingSpree', ''),
-            participant.get('largestMultiKill', ''),
-            participant.get('longestTimeSpentLiving', ''),
-            participant.get('magicDamageDealt', ''),
-            participant.get('magicDamageDealtToChampions', ''),
-            participant.get('magicDamageTaken', ''),
-            participant.get('neutralMinionsKilled', ''),
-            participant.get('nexusKills', ''),
-            participant.get('nexusTakedowns', ''),
-            participant.get('nexusLost', ''),
-            participant.get('objectivesStolen', ''),
-            participant.get('objectivesStolenAssists', ''),
-            participant.get('pentaKills', ''),
-            participant.get('physicalDamageDealt', ''),
-            participant.get('physicalDamageDealtToChampions', ''),
-            participant.get('physicalDamageTaken', ''),
-            participant.get('profileIcon', ''),
-            participant.get('puuid', ''),
-            participant.get('quadraKills', ''),
-            participant.get('riotIdName', ''),
-            participant.get('riotIdTagline', ''),
-            participant.get('role', ''),
-            participant.get('sightWardsBoughtInGame', ''),
-            participant.get('spell1Casts', ''),
-            participant.get('spell2Casts', ''),
-            participant.get('spell3Casts', ''),
-            participant.get('spell4Casts', ''),
-            participant.get('summoner1Casts', ''),
-            participant.get('summoner1Id', ''),
-            participant.get('summoner2Casts', ''),
-            participant.get('summoner2Id', ''),
-            participant.get('summonerId', ''),
-            participant.get('summonerLevel', ''),
-            participant.get('summonerName', ''),
-            participant.get('teamEarlySurrendered', ''),
-            participant.get('teamId', ''),
-            participant.get('teamPosition', ''),
-            participant.get('timeCCingOthers', ''),
-            participant.get('timePlayed', ''),
-            participant.get('totalDamageDealt', ''),
-            participant.get('totalDamageDealtToChampions', ''),
-            participant.get('totalDamageShieldedOnTeammates', ''),
-            participant.get('totalDamageTaken', ''),
-            participant.get('totalHeal', ''),
-            participant.get('totalHealsOnTeammates', ''),
-            participant.get('totalMinionsKilled', ''),
-            participant.get('totalTimeCCDealt', ''),
-            participant.get('totalTimeSpentDead', ''),
-            participant.get('totalUnitsHealed', ''),
-            participant.get('tripleKills', ''),
-            participant.get('trueDamageDealt', ''),
-            participant.get('trueDamageDealtToChampions', ''),
-            participant.get('trueDamageTaken', ''),
-            participant.get('turretKills', ''),
-            participant.get('turretTakedowns', ''),
-            participant.get('turretsLost', ''),
-            participant.get('unrealKills', ''),
-            participant.get('visionScore', ''),
-            participant.get('visionWardsBoughtInGame', ''),
-            participant.get('wardsKilled', ''),
-            participant.get('wardsPlaced', ''),
-            participant.get('win', ''),
-            participant.get('perks', {}).get('defense', ''),
-            participant.get('perks', {}).get('flex', ''),
-            participant.get('perks', {}).get('offense', '')
-        )
+        values = {
+            "match_id": match_id,
+            "participant_id": participant.get("participantId", ""),
+            "assists": participant.get("assists", ""),
+            "baronKills": participant.get("baronKills", ""),
+            "bountyLevel": participant.get("bountyLevel", ""),
+            "champExperience": participant.get("champExperience", ""),
+            "champLevel": participant.get("champLevel", ""),
+            "championId": participant.get("championId", ""),
+            "championName": participant.get("championName", ""),
+            "championTransform": participant.get("championTransform", ""),
+            "consumablesPurchased": participant.get("consumablesPurchased", ""),
+            "damageDealtToBuildings": participant.get("damageDealtToBuildings", ""),
+            "damageDealtToObjectives": participant.get("damageDealtToObjectives", ""),
+            "damageDealtToTurrets": participant.get("damageDealtToTurrets", ""),
+            "damageSelfMitigated": participant.get("damageSelfMitigated", ""),
+            "deaths": participant.get("deaths", ""),
+            "detectorWardsPlaced": participant.get("detectorWardsPlaced", ""),
+            "doubleKills": participant.get("doubleKills", ""),
+            "dragonKills": participant.get("dragonKills", ""),
+            "firstBloodAssist": participant.get("firstBloodAssist", ""),
+            "firstBloodKill": participant.get("firstBloodKill", ""),
+            "firstTowerAssist": participant.get("firstTowerAssist", ""),
+            "firstTowerKill": participant.get("firstTowerKill", ""),
+            "gameEndedInEarlySurrender": participant.get("gameEndedInEarlySurrender", ""),
+            "gameEndedInSurrender": participant.get("gameEndedInSurrender", ""),
+            "goldEarned": participant.get("goldEarned", ""),
+            "goldSpent": participant.get("goldSpent", ""),
+            "individualPosition": participant.get("individualPosition", ""),
+            "inhibitorKills": participant.get("inhibitorKills", ""),
+            "inhibitorTakedowns": participant.get("inhibitorTakedowns", ""),
+            "inhibitorsLost": participant.get("inhibitorsLost", ""),
+            "item0": participant.get("item0", ""),
+            "item1": participant.get("item1", ""),
+            "item2": participant.get("item2", ""),
+            "item3": participant.get("item3", ""),
+            "item4": participant.get("item4", ""),
+            "item5": participant.get("item5", ""),
+            "item6": participant.get("item6", ""),
+            "itemsPurchased": participant.get("itemsPurchased", ""),
+            "killingSprees": participant.get("killingSprees", ""),
+            "kills": participant.get("kills", ""),
+            "lane": participant.get("lane", ""),
+            "largestCriticalStrike": participant.get("largestCriticalStrike", ""),
+            "largestKillingSpree": participant.get("largestKillingSpree", ""),
+            "largestMultiKill": participant.get("largestMultiKill", ""),
+            "longestTimeSpentLiving": participant.get("longestTimeSpentLiving", ""),
+            "magicDamageDealt": participant.get("magicDamageDealt", ""),
+            "magicDamageDealtToChampions": participant.get("magicDamageDealtToChampions", ""),
+            "magicDamageTaken": participant.get("magicDamageTaken", ""),
+            "neutralMinionsKilled": participant.get("neutralMinionsKilled", ""),
+            "nexusKills": participant.get("nexusKills", ""),
+            "nexusTakedowns": participant.get("nexusTakedowns", ""),
+            "nexusLost": participant.get("nexusLost", ""),
+            "objectivesStolen": participant.get("objectivesStolen", ""),
+            "objectivesStolenAssists": participant.get("objectivesStolenAssists", ""),
+            "pentaKills": participant.get("pentaKills", ""),
+            "physicalDamageDealt": participant.get("physicalDamageDealt", ""),
+            "physicalDamageDealtToChampions": participant.get("physicalDamageDealtToChampions", ""),
+            "physicalDamageTaken": participant.get("physicalDamageTaken", ""),
+            "profileIcon": participant.get("profileIcon", ""),
+            "puuid": participant.get("puuid", ""),
+            "quadraKills": participant.get("quadraKills", ""),
+            "riotIdName": participant.get("riotIdName", ""),
+            "riotIdTagline": participant.get("riotIdTagline", ""),
+            "role": participant.get("role", ""),
+            "sightWardsBoughtInGame": participant.get("sightWardsBoughtInGame", ""),
+            "spell1Casts": participant.get("spell1Casts", ""),
+            "spell2Casts": participant.get("spell2Casts", ""),
+            "spell3Casts": participant.get("spell3Casts", ""),
+            "spell4Casts": participant.get("spell4Casts", ""),
+            "summoner1Casts": participant.get("summoner1Casts", ""),
+            "summoner1Id": participant.get("summoner1Id", ""),
+            "summoner2Casts": participant.get("summoner2Casts", ""),
+            "summoner2Id": participant.get("summoner2Id", ""),
+            "summonerId": participant.get("summonerId", ""),
+            "summonerLevel": participant.get("summonerLevel", ""),
+            "summonerName": participant.get("summonerName", ""),
+            "teamEarlySurrendered": participant.get("teamEarlySurrendered", ""),
+            "teamId": participant.get("teamId", ""),
+            "teamPosition": participant.get("teamPosition", ""),
+            "timeCCingOthers": participant.get("timeCCingOthers", ""),
+            "timePlayed": participant.get("timePlayed", ""),
+            "totalDamageDealt": participant.get("totalDamageDealt", ""),
+            "totalDamageDealtToChampions": participant.get("totalDamageDealtToChampions", ""),
+            "totalDamageShieldedOnTeammates": participant.get("totalDamageShieldedOnTeammates", ""),
+            "totalDamageTaken": participant.get("totalDamageTaken", ""),
+            "totalHeal": participant.get("totalHeal", ""),
+            "totalHealsOnTeammates": participant.get("totalHealsOnTeammates", ""),
+            "totalMinionsKilled": participant.get("totalMinionsKilled", ""),
+            "totalTimeCCDealt": participant.get("totalTimeCCDealt", ""),
+            "totalTimeSpentDead": participant.get("totalTimeSpentDead", ""),
+            "totalUnitsHealed": participant.get("totalUnitsHealed", ""),
+            "tripleKills": participant.get("tripleKills", ""),
+            "trueDamageDealt": participant.get("trueDamageDealt", ""),
+            "trueDamageDealtToChampions": participant.get("trueDamageDealtToChampions", ""),
+            "trueDamageTaken": participant.get("trueDamageTaken", ""),
+            "turretKills": participant.get("turretKills", ""),
+            "turretTakedowns": participant.get("turretTakedowns", ""),
+            "turretsLost": participant.get("turretsLost", ""),
+            "unrealKills": participant.get("unrealKills", ""),
+            "visionScore": participant.get("visionScore", ""),
+            "visionWardsBoughtInGame": participant.get("visionWardsBoughtInGame", ""),
+            "wardsKilled": participant.get("wardsKilled", ""),
+            "wardsPlaced": participant.get("wardsPlaced", ""),
+            "win": participant.get("win", ""),
+            "perks_defense": participant.get("perks", {}).get("defense", ""),
+            "perks_flex": participant.get("perks", {}).get("flex", ""),
+            "perks_offense": participant.get("perks", {}).get("offense", ""),
+            }
 
-        # SQL INSERT statement
-        query = """
-            INSERT INTO participant_dto 
-            (match_id, participant_id, assists, baron_kills, bounty_level, champ_experience, champ_level, champion_id, champion_name, champion_transform, consumables_purchased, damage_dealt_to_buildings, damage_dealt_to_objectives, damage_dealt_to_turrets, damage_self_mitigated, deaths, detector_wards_placed, double_kills, dragon_kills, first_blood_assist, first_blood_kill, first_tower_assist, first_tower_kill, game_ended_in_early_surrender, game_ended_in_surrender, gold_earned, gold_spent, individual_position, inhibitor_kills, inhibitor_takedowns, inhibitors_lost, item0, item1, item2, item3, item4, item5, item6, items_purchased, killing_sprees, kills, lane, largest_critical_strike, largest_killing_spree, largest_multi_kill, longest_time_spent_living, magic_damage_dealt, magic_damage_dealt_to_champions, magic_damage_taken, neutral_minions_killed, nexus_kills, nexus_takedowns, nexus_lost, objectives_stolen, objectives_stolen_assists, penta_kills, physical_damage_dealt, physical_damage_dealt_to_champions, physical_damage_taken, profile_icon, puuid, quadra_kills, riot_id_name, riot_id_tagline, role, sight_wards_bought_in_game, spell1_casts, spell2_casts, spell3_casts, spell4_casts, summoner1_casts, summoner1_id, summoner2_casts, summoner2_id, summoner_id, summoner_level, summoner_name, team_early_surrendered, team_id, team_position, time_ccing_others, time_played, total_damage_dealt, total_damage_dealt_to_champions, total_damage_shielded_on_teammates, total_damage_taken, total_heal, total_heals_on_teammates, total_minions_killed, total_time_cc_dealt, total_time_spent_dead, total_units_healed, triple_kills, true_damage_dealt, true_damage_dealt_to_champions, true_damage_taken, turret_kills, turret_takedowns, turrets_lost, unreal_kills, vision_score, vision_wards_bought_in_game, wards_killed, wards_placed, win, perks_defense, perks_flex, perks_offense)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s
-        """
+        participant_dto_list.append(values)
+        
+    return participant_dto_list
 
-        # Execute the query
-        execute_query(query, values)
+def get_participant_frames(match_timeline_dto):
+    frames = match_timeline_dto.info.frames
+    match_id = match_timeline_dto.metadata.match_id
 
-
-def insert_participant_frames(match_timeline_dto):
-    frames = match_timeline_dto['info']['frames']
-    match_id = match_timeline_dto['metadata']['matchId']
+    participant_frames_list = []
 
     for frame_number, frame in enumerate(frames):
-        participant_frames = frame['participantFrames'].values()  # Assuming participantFrames is a dict
+        participant_frames = frame.participant_frames
 
-        for participant_frame in participant_frames:
-            participant_id = participant_frame['participantId']
-            timestamp = frame['timestamp']  # Assuming timestamp is in the frame, not in participant_frame
-            level = participant_frame['level']
-            current_gold = participant_frame['currentGold']
-            gold_per_second = participant_frame['goldPerSecond']
-            total_gold = participant_frame['totalGold']
-            xp = participant_frame['xp']
-            minions_killed = participant_frame['minionsKilled']
-            jungle_minions_killed = participant_frame['jungleMinionsKilled']
-            time_enemy_spent_controlled = participant_frame['timeEnemySpentControlled']
-            position_x = participant_frame['position']['x']  # Assuming position is a dictionary with x and y
-            position_y = participant_frame['position']['y']
+        for participant_id, participant_frame in participant_frames.items():
+            # Access attributes using dot notation
+            participant_id = participant_frame.participant_id
+            timestamp = frame.timestamp  # Assuming Frame class has a 'timestamp' attribute
+            level = participant_frame.level
+            current_gold = participant_frame.current_gold
+            gold_per_second = participant_frame.gold_per_second
+            total_gold = participant_frame.total_gold
+            xp = participant_frame.xp
+            minions_killed = participant_frame.minions_killed
+            jungle_minions_killed = participant_frame.jungle_minions_killed
+            time_enemy_spent_controlled = participant_frame.time_enemy_spent_controlled
 
-            query = """
-                INSERT INTO participant_frames 
-                (match_id, frame_number, participant_id, timestamp, level, current_gold, gold_per_second, total_gold, xp, minions_killed, jungle_minions_killed, time_enemy_spent_controlled, position_x, position_y) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """
-            values = (match_id, frame_number, participant_id, timestamp, level, current_gold, gold_per_second, total_gold, xp, minions_killed, jungle_minions_killed, time_enemy_spent_controlled, position_x, position_y)
+            position_x = participant_frame.position["x"]
+            position_y = participant_frame.position["y"]
 
-            # Execute the query
-            execute_query(query, values)
+            values = {
+                "match_id": match_id,
+                "frame_number": frame_number,
+                "participant_id": participant_id,
+                "timestamp": timestamp,
+                "level": level,
+                "current_gold": current_gold,
+                "gold_per_second": gold_per_second,
+                "total_gold": total_gold,
+                "xp": xp,
+                "minions_killed": minions_killed,
+                "jungle_minions_killed": jungle_minions_killed,
+                "time_enemy_spent_controlled": time_enemy_spent_controlled,
+                "position_x": position_x,
+                "position_y": position_y,
+            }
 
+            participant_frames_list.append(values)
 
+    return participant_frames_list
 
-if __name__ == "__insert_match__":
-    insert_match()
+def insert_participant_frames(match_timeline_dto):
+    participant_frames_list = get_participant_frames(match_timeline_dto)
+    # batch insert
+    helper = SQLHelper()
+    for pframes in participant_frames_list:
+        helper.insert_dict("participant_frames", pframes)
+
+def get_summoner_dto()
