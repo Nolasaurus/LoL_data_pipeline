@@ -88,7 +88,7 @@ class API_Client:
 
     def get_summoner_by_name(self, summoner_name):
         # Remove leading/trailing whitespaces and encode space character
-        # https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/The%20Steina?api_key=RGAPI-8e551450-57f6-469c-9ef4-758a0128e1a5
+        # https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/The%20Steina?api_key=RGAPI-8e551
         summoner_name_encoded = summoner_name.strip().replace(" ", "%20")
         url = f"https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name_encoded}?api_key={self.api_key}"
         response = self._make_request(url, timeout=5)
