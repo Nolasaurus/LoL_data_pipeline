@@ -1,5 +1,12 @@
-API-key.txt
+app.log
 __pycache__
-.conda
-postgres_pw.txt
-eda/
+.pytest_cache
+.venv
+.env
+src/tester.ipynb
+src/testing.ipynb
+build/
+src/LOL_api.egg-info/
+*.ipynb
+/example_frontend
+.vscode/

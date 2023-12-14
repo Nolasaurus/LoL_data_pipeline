@@ -1,0 +1,43 @@
+version: '3.10'
+
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      env_file: .env
+      ADMIN_POSTGRES_USER: ${ADMIN_POSTGRES_USER}
+      ADMIN_POSTGRES_PASSWORD: ${ADMIN_POSTGRES_PASSWORD}
+      READONLY_POSTGRES_USER: ${READONLY_POSTGRES_USER}
+      READONLY_POSTGRES_PASSWORD: ${READONLY_POSTGRES_PASSWORD}
+      POSTGRES_DB: loldb
+    ports: 
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${ADMIN_POSTGRES_USER}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+
+  python-app:
+    build: .  # Set the build context to the project root
+    environment:
+      env_file: .env
+      ADMIN_POSTGRES_USER: ${ADMIN_POSTGRES_USER}
+      ADMIN_POSTGRES_PASSWORD: ${ADMIN_POSTGRES_PASSWORD}
+      READONLY_POSTGRES_USER: ${READONLY_POSTGRES_USER}
+      READONLY_POSTGRES_PASSWORD: ${READONLY_POSTGRES_PASSWORD}
+      RIOT_API_KEY: ${RIOT_API_KEY}
+      POSTGRES_DB: loldb
+      POSTGRES_HOST: postgres
+    ports:
+      - "8501:8501"
+    depends_on:
+      - postgres
+    volumes:
+      - ./src:/usr/src/app  # Mount the src directory
+
+volumes:
+  pgdata:
