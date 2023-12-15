@@ -4,14 +4,11 @@ import requests
 import logging
 import time
 
-
-
 logging.basicConfig(
     filename="app.log",
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
-
 
 class RateLimitExceededError(Exception):
     pass
@@ -53,11 +50,8 @@ class API_Client:
             logging.error("API key is not set in environment variables")
             raise Exception("API key is not set in environment variables")
         logging.info("API key loaded")
-        print(f"API key: {self.api_key}")  # Add this line for debugging
 
     def _make_request(self, url, timeout=None):
-        # Rest of your code
-
         logging.debug("Making request to URL: %s", url)
 
         # Enforce rate limiting before making a request
@@ -79,42 +73,51 @@ class API_Client:
             else:
                 print(f"Error: {response.status_code}")
                 return None
+
         except requests.exceptions.Timeout:
-            print(f"Request timed out for url: {url}")
+            logging.error(f"Request timed out for url: {url}")
             return None
         except requests.exceptions.RequestException as e:
             logging.error("Request exception: %s", e)
             return None
+        except Exception as e:
+            logging.error("An unexpected error occurred during request: %s", e)
+            return None
 
     def get_summoner_by_name(self, summoner_name):
+        logging.info(f"Fetching summoner data for: {summoner_name}")
         # Remove leading/trailing whitespaces and encode space character
-        # https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/The%20Steina?api_key=RGAPI-8e551
         summoner_name_encoded = summoner_name.strip().replace(" ", "%20")
         url = f"https://na1.api.riotgames.com/lol/summoner/v4/summoners/by-name/{summoner_name_encoded}?api_key={self.api_key}"
         response = self._make_request(url, timeout=5)
         return response if response else None
 
     def get_match_ids_by_puuid(self, puuid, start=0, count=20):
+        logging.info(f"Fetching match IDs for PUUID: {puuid}")
         url = f"https://americas.api.riotgames.com/lol/match/v5/matches/by-puuid/{puuid}/ids?start={start}&count={count}&api_key={self.api_key}"
         response = self._make_request(url, timeout=5)
         return response if response else None
 
     def get_match_by_match_id(self, match_id):
+        logging.info(f"Fetching match data for match ID: {match_id}")
         url = f"https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}?api_key={self.api_key}"
         response = self._make_request(url, timeout=5)
         return response if response else None
 
     def get_match_timeline(self, match_id):
+        logging.info(f"Fetching match timeline for match ID: {match_id}")
         url = f"https://americas.api.riotgames.com/lol/match/v5/matches/{match_id}/timeline?api_key={self.api_key}"
         response = self._make_request(url, timeout=5)
         return response if response else None
 
     def get_puuid_by_summon_id(self, summoner_id):
+        logging.info(f"Fetching PUUID for summoner ID: {summoner_id}")
         url = f"https://na1.api.riotgames.com/lol/summoner/v4/summoners/{summoner_id}?api_key={self.api_key}"
         response = self._make_request(url, timeout=5)
         return response["puuid"] if response else None
 
     def get_summoner_ids_from_league_id(self, league_id):
+        logging.info(f"Fetching summoner IDs for league ID: {league_id}")
         url = f"https://na1.api.riotgames.com/lol/league/v4/leagues/{league_id}?api_key={self.api_key}"
         response = self._make_request(url, timeout=5)
         if response:
