@@ -38,6 +38,7 @@ services:
       - postgres
     volumes:
       - ./src:/usr/src/app  # Mount the src directory
+      - ./cache:/usr/src/cache # cache API responses until inserted into sql db
 
 volumes:
   pgdata:

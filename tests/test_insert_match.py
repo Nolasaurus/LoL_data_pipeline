@@ -9,18 +9,16 @@ match_data_filepath = '/home/nolan/projects/LoL_data_pipeline/tests/files/NA1_47
 
 # Load JSON data and create DTOs
 with open(match_data_filepath, 'r') as file:
-    match_data = json.load(file)
-match_dto = MatchDto(match_data)
+    match_json = json.load(file)
 
 with open(match_timeline_data_filepath, 'r') as file:
-    match_timeline_data = json.load(file)
-match_timeline_dto = MatchTimelineDto(match_timeline_data)
+    match_timeline_json = json.load(file)
 
 
 class TestGetChampionStats(TestCase):
     def test_get_champion_stats(self):
         # Assuming match_timeline_dto is already created from the test data
-        actual_values_list = get_champion_stats(match_timeline_dto)
+        actual_values_list = get_champion_stats(match_timeline_json)
 
         def extract_values_by_frame_and_participant(values_list, target_frame_number, target_participant_id):
             extracted_values = []
@@ -37,7 +35,7 @@ class TestGetChampionStats(TestCase):
         sample_stats = extract_values_by_frame_and_participant(actual_values_list, frame_number_to_extract, participant_id_to_extract)
         self.assertNotEqual(sample_stats, {})
         # Check the length of the result
-        expected_length = len(match_timeline_dto.info.frames) * len(match_timeline_dto.info.frames[0].participant_frames)
+        expected_length = len(match_timeline_json.info.frames) * len(match_timeline_json.info.frames[0].participant_frames)
         self.assertEqual(len(actual_values_list), expected_length)
 
         self.assertEqual(sample_stats['armor'], 0)
@@ -72,7 +70,7 @@ class TestGetBansFunction(TestCase):
         expected_bans = []
 
         # Call the function with the mock data
-        actual_bans = get_bans(match_dto)
+        actual_bans = get_bans(match_json)
 
         # Assert that the actual output matches the expected output
         self.assertEqual(actual_bans, expected_bans)
@@ -83,7 +81,7 @@ class TestGetTeams(TestCase):
 
     def test_get_teams(self):
         # Assuming match_dto is already created from the JSON data
-        teams = get_teams(match_dto)
+        teams = get_teams(match_json)
 
         # Assert the basic structure
         self.assertEqual(len(teams), 2)

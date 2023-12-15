@@ -1,6 +1,7 @@
 import os
 import psycopg2
 from psycopg2.extras import execute_values
+from psycopg2 import DatabaseError, IntegrityError
 from dotenv import load_dotenv
 import contextlib
 import logging
@@ -123,16 +124,25 @@ def execute_batch_query(query, values_list, page_size=100):
         raise  # Re-raise the exception to be caught in the calling function
 
 def add_df_to_table(table_name, data_df):
-    with connect_db() as conn:
-        with conn.cursor("admin") as cursor:
-            cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")
-            db_columns = [desc[0] for desc in cursor.description]
-            df_columns = data_df.columns.tolist()
+    try:
+        with connect_db() as conn:
+            with conn.cursor("admin") as cursor:
+                cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")
+                db_columns = [desc[0] for desc in cursor.description]
+                df_columns = data_df.columns.tolist()
 
-            if db_columns != df_columns:
-                print("Columns in df do not match cols in db table. Aborted.")
-                return
+                if db_columns != df_columns:
+                    print("Columns in df do not match cols in db table. Aborted.")
+                    return
 
-            values = [tuple(row) for row in data_df.values]
-            insert_stmt = f"INSERT INTO {table_name} ({','.join(df_columns)}) VALUES %s"
-            execute_values(cursor, insert_stmt, values)
+                values = [tuple(row) for row in data_df.values]
+                insert_stmt = f"INSERT INTO {table_name} ({','.join(df_columns)}) VALUES %s"
+                execute_values(cursor, insert_stmt, values)
+                conn.commit()
+
+    except IntegrityError as e:
+        print(f"Integrity error occurred: {e}")
+    except DatabaseError as e:
+        print(f"Database error occurred: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
