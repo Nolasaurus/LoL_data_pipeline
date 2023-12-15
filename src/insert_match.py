@@ -1,5 +1,5 @@
 from postgres_helperfile import SQLHelper, execute_batch_query
-
+from match_classes import SummonerDto
 
 def insert_match(match_dto, match_timeline_dto):
     pass
@@ -581,5 +581,3 @@ def insert_participant_frames(match_timeline_dto):
     helper = SQLHelper()
     for pframes in participant_frames_list:
         helper.insert_dict("participant_frames", pframes)
-
-def get_summoner_dto()

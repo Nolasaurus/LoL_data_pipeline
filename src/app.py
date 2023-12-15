@@ -1,9 +1,9 @@
 import streamlit as st
 import psycopg2
-from SummonerDto import SummonerDto
 from api_client import API_Client
 import postgres_helperfile
 from insert_match import insert_match
+from match_classes import SummonerDto
 
 DEV_MODE = False # postgres
 
@@ -16,8 +16,9 @@ def main():
     )
     if summoner_name:
         try:
-            # API call to retrieve puuid from summoner name
-            summoner_dto = SummonerDto.get_summoner_dto(summoner_name)
+            # API call to retrieve puuid from summoner names
+            summoner_json = API_Client().get_summoner_by_name(summoner_name)
+            summoner_dto = SummonerDto(summoner_json)
             summoner_puuid = summoner_dto.puuid
         except Exception as e:
             st.error(f"Error fetching summoner data: {e}")

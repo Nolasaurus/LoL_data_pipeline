@@ -23,7 +23,7 @@ class MatchTimelineDto:
     class Info:
         def __init__(self, info_json):
             self.frame_interval = info_json["frameInterval"]
-            self.frames = [self.Frame(frame) for frame in info_json["frames"]]
+            self.frames = [self.Frame(frame_json) for frame_json in info_json["frames"]]
             self.game_id = info_json["gameId"]
             self.participants = info_json["participants"]
 
@@ -258,12 +258,18 @@ class MatchDto:
                     self.pick_turn = ban_json["pickTurn"]
 
 class SummonerDto:
-    def __init__(self, json):
-        self.account_id = json.get("accountId")
-        self.profile_icon_id = json.get("profileIconId")
-        self.revision_date = json.get("revisionDate")
-        self.name = json.get("name")
-        self.id = json.get("id")
-        self.puuid = json.get("puuid")
-        self.summoner_level = json.get("summonerLevel")
+    # Store summoner data as attributes
+    def __init__(self, summoner_dto_json):
+        # Check if summoner_dto_json is a dictionary
+        if not isinstance(summoner_dto_json, dict):
+            raise ValueError("The provided input is not a valid JSON object.")
+
+        # Proceed if it's a valid dictionary
+        self.account_id = summoner_dto_json.get("accountId")
+        self.profile_icon_id = summoner_dto_json.get("profileIconId")
+        self.revision_date = summoner_dto_json.get("revisionDate")
+        self.name = summoner_dto_json.get("name")
+        self.id = summoner_dto_json.get("id")
+        self.puuid = summoner_dto_json.get("puuid")
+        self.summoner_level = summoner_dto_json.get("summonerLevel")
 
