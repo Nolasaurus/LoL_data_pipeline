@@ -1,104 +1,172 @@
-from postgres_helperfile import SQLHelper, execute_batch_query
-from match_classes import SummonerDto
+from postgres_helperfile import SQLHelper, add_df_to_table
+from api_client import API_Client
+import sys
+import os
+import json
+
+import logging
+
+logging.basicConfig(
+    filename='app.log', 
+    level=logging.INFO, 
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+
+
+def main(match_id):
+    logging.info(f"Starting main process for match ID: {match_id}")
+    api_client = API_Client()
+    # get match_dto, match_timeline_dto
+    match_dto = api_client.get_match_by_match_id(match_id)
+    match_timeline_dto = api_client.get_match_timeline(match_id)
+
+    # Save to cache
+    save_to_cache(f"match_{match_id}.json", match_dto)
+    save_to_cache(f"timeline_{match_id}.json", match_timeline_dto)
+
+    # try to insert
+    try:
+        insert_match(match_dto, match_timeline_dto)
+    except Exception as e:
+        logging.error(f"Failed to insert match data for match ID {match_id}: {e}")
+        print(f"Failed to insert match data: {e}")
+        raise
+
+    # Upon successful insertion, clean up cache
+    cleanup_cache(match_id)
+
+def cleanup_cache(match_id):
+    cache_dir = "./cache"
+    match_file = os.path.join(cache_dir, f"match_{match_id}.json")
+    timeline_file = os.path.join(cache_dir, f"timeline_{match_id}.json")
+
+    try:
+        if os.path.exists(match_file):
+            os.remove(match_file)
+            logging.info(f"Deleted cache file: {match_file}")
+
+        if os.path.exists(timeline_file):
+            os.remove(timeline_file)
+            logging.info(f"Deleted cache file: {timeline_file}")
+    except Exception as e:
+        logging.error(f"Failed to clean up cache for match ID {match_id}: {e}")
+
+
+def save_to_cache(filename, data):
+    """Save data to a file in the cache directory."""
+    cache_dir = "./cache"  # Change to a relative path
+    os.makedirs(cache_dir, exist_ok=True)  # Create the cache directory if it doesn't exist
+    file_path = os.path.join(cache_dir, filename)
+    with open(file_path, 'w') as file:
+        json.dump(data, file)
 
 def insert_match(match_dto, match_timeline_dto):
-    pass
-
-def get_bans(MatchDto):
-    match_id = MatchDto.metadata.match_id
-    teams = MatchDto.info.teams
+    logging.info(f"Inserting match data for match DTO and timeline DTO")
+    add_df_to_table("match_metadata", get_match_metadata(match_dto))
+    add_df_to_table("perk_style_selections", get_perk_style_selections(match_dto))
+    add_df_to_table("participant_dto", get_participant_dto(match_dto))
+    add_df_to_table("challenges", get_challenges(match_dto))
+    add_df_to_table("participant_frames", get_participant_frames(match_timeline_dto))
+    add_df_to_table("champion_stats", get_champion_stats(match_timeline_dto))
+    add_df_to_table("match_events", get_match_events(match_timeline_dto))
+    damage_received_list, damage_dealt_list = get_victim_damage(match_timeline_dto)
+    add_df_to_table("victim_damage_dealt", damage_dealt_list)
+    add_df_to_table("victim_damage_received", damage_received_list)
+    add_df_to_table("damage_stats", get_damage_stats(match_timeline_dto))
+    add_df_to_table("teams", get_teams(match_dto))
+    add_df_to_table("bans", get_bans(match_dto))
+    logging.info(f"Data insertion for match completed successfully")
+    
+def get_bans(match_dto):
+    metadata = match_dto.get("metadata", {})
+    match_id = metadata.get("match_id", "")
+    teams = match_dto.get("info", {}).get("teams", [])
 
     # Prepare a list to hold all the values to be inserted
     all_values = []
     for team in teams:
-        for ban in team.bans:
-            # Append each set of values as a tuple to the list
+        for ban in team.get("bans", []):
+            # Append each set of values as a dictionary to the list
             ban_dict = {
                 "match_id": match_id,
-                "champion_id": ban.championId,
-                "pick_turn": ban.pickTurn,
+                "champion_id": ban.get("championId"),
+                "pick_turn": ban.get("pickTurn"),
             }
             all_values.append(ban_dict)
 
     return all_values
 
 def get_champion_stats(match_timeline_dto):
-    frames = match_timeline_dto.info.frames
-    match_id = match_timeline_dto.metadata.match_id
+    frames = match_timeline_dto.get('info', {}).get('frames', [])
+    match_id = match_timeline_dto.get('metadata', {}).get('match_id', '')
 
     values_list = []
     for frame_number, frame in enumerate(frames):
-        for participant_id, participant_frame in frame.participant_frames.items():
-            champion_stats = (
-                participant_frame.champion_stats
-                if participant_frame.champion_stats
-                else {}
-            )
+        for participant_id, participant_frame in frame.get('participant_frames', {}).items():
+            champion_stats = participant_frame.get('champion_stats', {})
             values = {
                 "match_id": match_id,
                 "frame_number": frame_number,
                 "participant_id": participant_id,
-                "ability_haste": getattr(champion_stats, "abilityHaste", 0),
-                "ability_power": getattr(champion_stats, "abilityPower", 0),
-                "armor": getattr(champion_stats, "armor", 0),
-                "armor_pen": getattr(champion_stats, "armorPen", 0),
-                "armor_pen_percent": getattr(champion_stats, "armorPenPercent", 0.0),
-                "attack_damage": getattr(champion_stats, "attackDamage", 0),
-                "attack_speed": getattr(champion_stats, "attackSpeed", 0.0),
-                "bonus_armor_pen_percent": getattr(
-                    champion_stats, "bonusArmorPenPercent", 0.0
-                ),
-                "bonus_magic_pen_percent": getattr(
-                    champion_stats, "bonusMagicPenPercent", 0.0
-                ),
-                "cc_reduction": getattr(champion_stats, "ccReduction", 0),
-                "health": getattr(champion_stats, "health", 0),
-                "health_max": getattr(champion_stats, "healthMax", 0),
-                "health_regen": getattr(champion_stats, "healthRegen", 0),
-                "lifesteal": getattr(champion_stats, "lifesteal", 0.0),
-                "magic_pen": getattr(champion_stats, "magicPen", 0),
-                "magic_pen_percent": getattr(champion_stats, "magicPenPercent", 0.0),
-                "magic_resist": getattr(champion_stats, "magicResist", 0),
-                "movement_speed": getattr(champion_stats, "movementSpeed", 0),
-                "omnivamp": getattr(champion_stats, "omnivamp", 0.0),
-                "physical_vamp": getattr(champion_stats, "physicalVamp", 0.0),
-                "power": getattr(champion_stats, "power", 0),
-                "power_max": getattr(champion_stats, "powerMax", 0),
-                "power_regen": getattr(champion_stats, "powerRegen", 0),
-                "spell_vamp": getattr(champion_stats, "spellVamp", 0.0),
+                "ability_haste": champion_stats.get("abilityHaste", 0),
+                "ability_power": champion_stats.get("abilityPower", 0),
+                "armor": champion_stats.get("armor", 0),
+                "armor_pen": champion_stats.get("armorPen", 0),
+                "armor_pen_percent": champion_stats.get("armorPenPercent", 0.0),
+                "attack_damage": champion_stats.get("attackDamage", 0),
+                "attack_speed": champion_stats.get("attackSpeed", 0.0),
+                "bonus_armor_pen_percent": champion_stats.get("bonusArmorPenPercent", 0.0),
+                "bonus_magic_pen_percent": champion_stats.get("bonusMagicPenPercent", 0.0),
+                "cc_reduction": champion_stats.get("ccReduction", 0),
+                "health": champion_stats.get("health", 0),
+                "health_max": champion_stats.get("healthMax", 0),
+                "health_regen": champion_stats.get("healthRegen", 0),
+                "lifesteal": champion_stats.get("lifesteal", 0.0),
+                "magic_pen": champion_stats.get("magicPen", 0),
+                "magic_pen_percent": champion_stats.get("magicPenPercent", 0.0),
+                "magic_resist": champion_stats.get("magicResist", 0),
+                "movement_speed": champion_stats.get("movementSpeed", 0),
+                "omnivamp": champion_stats.get("omnivamp", 0.0),
+                "physical_vamp": champion_stats.get("physicalVamp", 0.0),
+                "power": champion_stats.get("power", 0),
+                "power_max": champion_stats.get("powerMax", 0),
+                "power_regen": champion_stats.get("powerRegen", 0),
+                "spell_vamp": champion_stats.get("spellVamp", 0.0),
             }
 
             values_list.append(values)
 
     return values_list
 
+
 def get_match_metadata(match_dto):
-    metadata = getattr(match_dto, "metadata", {})
-    info = getattr(match_dto, "info", {})
+    metadata = match_dto.get("metadata", {})
+    info = match_dto.get("info", {})
 
     match_metadata_dict = {
-        'data_version': getattr(metadata, "dataVersion", ""),
-        'match_id': getattr(metadata, "matchId", ""),
-        'game_creation': getattr(info, "gameCreation", 0),
-        'game_duration': getattr(info, "gameDuration", 0),
-        'game_end_timestamp': getattr(info, "gameEndTimestamp", 0),
-        'game_id': getattr(info, "gameId", ""),
-        'game_mode': getattr(info, "gameMode", ""),
-        'game_name': getattr(info, "gameName", ""),
-        'game_start_timestamp': getattr(info, "gameStartTimestamp", 0),
-        'game_type': getattr(info, "gameType", ""),
-        'game_version': getattr(info, "gameVersion", ""),
-        'map_id': getattr(info, "mapId", 0),
-        'platform_id': getattr(info, "platformId", ""),
-        'queue_id': getattr(info, "queueId", 0),
-        'tournament_code': getattr(info, "tournamentCode", "")
+        'data_version': metadata.get("dataVersion", ""),
+        'match_id': metadata.get("matchId", ""),
+        'game_creation': info.get("gameCreation", 0),
+        'game_duration': info.get("gameDuration", 0),
+        'game_end_timestamp': info.get("gameEndTimestamp", 0),
+        'game_id': info.get("gameId", ""),
+        'game_mode': info.get("gameMode", ""),
+        'game_name': info.get("gameName", ""),
+        'game_start_timestamp': info.get("gameStartTimestamp", 0),
+        'game_type': info.get("gameType", ""),
+        'game_version': info.get("gameVersion", ""),
+        'map_id': info.get("mapId", 0),
+        'platform_id': info.get("platformId", ""),
+        'queue_id': info.get("queueId", 0),
+        'tournament_code': info.get("tournamentCode", "")
     }
 
     return match_metadata_dict
 
+
 def get_perk_style_selections(match_dto):
-    participants = getattr(match_dto, "info", {}).get("participants", [])
-    match_id = getattr(match_dto, "metadata", {}).get("matchId", "")
+    participants = match_dto.get("info", {}).get("participants", [])
+    match_id = match_dto.get("metadata", {}).get("matchId", "")
 
     perk_style_selections_list = []
     for participant in participants:
@@ -120,109 +188,113 @@ def get_perk_style_selections(match_dto):
 
     return perk_style_selections_list
 
+
 def get_teams(match_dto):
-    match_id = match_dto.metadata.match_id
-    teams = match_dto.info.teams
+    metadata = match_dto.get("metadata", {})
+    match_id = metadata.get("match_id", "")
+    teams = match_dto.get("info", {}).get("teams", [])
 
     teams_list = []
     for team in teams:
         # Extracting objectives data
-        objectives = team.objectives.objectives
+        objectives = team.get("objectives", {}).get("objectives", {})
 
         team_data = {
-            'team_id': team.team_id,
+            'team_id': team.get("team_id", ""),
             'match_id': match_id,
-            'baron_first': objectives['baron'].first if 'baron' in objectives else False,
-            'baron_kills': objectives['baron'].kills if 'baron' in objectives else 0,
-            'dragon_first': objectives['dragon'].first if 'dragon' in objectives else False,
-            'dragon_kills': objectives['dragon'].kills if 'dragon' in objectives else 0,
-            'champion_first': objectives['champion'].first if 'champion' in objectives else False,
-            'champion_kills': objectives['champion'].kills if 'champion' in objectives else 0,
-            'inhibitor_first': objectives['inhibitor'].first if 'inhibitor' in objectives else False,
-            'inhibitor_kills': objectives['inhibitor'].kills if 'inhibitor' in objectives else 0,
-            'rift_herald_first': objectives['riftHerald'].first if 'riftHerald' in objectives else False,
-            'rift_herald_kills': objectives['riftHerald'].kills if 'riftHerald' in objectives else 0,
-            'tower_first': objectives['tower'].first if 'tower' in objectives else False,
-            'tower_kills': objectives['tower'].kills if 'tower' in objectives else 0,
-            'win': team.win
+            'baron_first': objectives.get('baron', {}).get('first', False),
+            'baron_kills': objectives.get('baron', {}).get('kills', 0),
+            'dragon_first': objectives.get('dragon', {}).get('first', False),
+            'dragon_kills': objectives.get('dragon', {}).get('kills', 0),
+            'champion_first': objectives.get('champion', {}).get('first', False),
+            'champion_kills': objectives.get('champion', {}).get('kills', 0),
+            'inhibitor_first': objectives.get('inhibitor', {}).get('first', False),
+            'inhibitor_kills': objectives.get('inhibitor', {}).get('kills', 0),
+            'rift_herald_first': objectives.get('riftHerald', {}).get('first', False),
+            'rift_herald_kills': objectives.get('riftHerald', {}).get('kills', 0),
+            'tower_first': objectives.get('tower', {}).get('first', False),
+            'tower_kills': objectives.get('tower', {}).get('kills', 0),
+            'win': team.get('win', "")
         }
 
         teams_list.append(team_data)
 
     return teams_list
 
+
 def get_damage_stats(match_timeline_dto):
-    frames = match_timeline_dto["info"]["frames"]
-    match_id = match_timeline_dto["metadata"]["matchId"]
+    frames = match_timeline_dto.get("info", {}).get("frames", [])
+    match_id = match_timeline_dto.get("metadata", {}).get("matchId", "")
 
     damage_stats_list = []
     for frame_number, frame in enumerate(frames):
-        participant_frames = frame["participantFrames"].values()  # Assuming participantFrames is a dict
+        participant_frames = frame.get("participantFrames", {}).values()  # Assuming participantFrames is a dict
 
         for participant_frame in participant_frames:
-            participant_id = participant_frame["participantId"]
-            damage_stats = participant_frame["damageStats"]
+            participant_id = participant_frame.get("participantId")
+            damage_stats = participant_frame.get("damageStats", {})
 
             damage_stat_dict = {
                 'match_id': match_id,
                 'frame_number': frame_number,
                 'participant_id': participant_id,
-                'magic_damage_done': damage_stats["magicDamageDone"],
-                'magic_damage_done_to_champions': damage_stats["magicDamageDoneToChampions"],
-                'magic_damage_taken': damage_stats["magicDamageTaken"],
-                'physical_damage_done': damage_stats["physicalDamageDone"],
-                'physical_damage_done_to_champions': damage_stats["physicalDamageDoneToChampions"],
-                'physical_damage_taken': damage_stats["physicalDamageTaken"],
-                'total_damage_done': damage_stats["totalDamageDone"],
-                'total_damage_done_to_champions': damage_stats["totalDamageDoneToChampions"],
-                'total_damage_taken': damage_stats["totalDamageTaken"],
-                'true_damage_done': damage_stats["trueDamageDone"],
-                'true_damage_done_to_champions': damage_stats["trueDamageDoneToChampions"],
-                'true_damage_taken': damage_stats["trueDamageTaken"]
+                'magic_damage_done': damage_stats.get("magicDamageDone", 0),
+                'magic_damage_done_to_champions': damage_stats.get("magicDamageDoneToChampions", 0),
+                'magic_damage_taken': damage_stats.get("magicDamageTaken", 0),
+                'physical_damage_done': damage_stats.get("physicalDamageDone", 0),
+                'physical_damage_done_to_champions': damage_stats.get("physicalDamageDoneToChampions", 0),
+                'physical_damage_taken': damage_stats.get("physicalDamageTaken", 0),
+                'total_damage_done': damage_stats.get("totalDamageDone", 0),
+                'total_damage_done_to_champions': damage_stats.get("totalDamageDoneToChampions", 0),
+                'total_damage_taken': damage_stats.get("totalDamageTaken", 0),
+                'true_damage_done': damage_stats.get("trueDamageDone", 0),
+                'true_damage_done_to_champions': damage_stats.get("trueDamageDoneToChampions", 0),
+                'true_damage_taken': damage_stats.get("trueDamageTaken", 0)
             }
 
             damage_stats_list.append(damage_stat_dict)
 
     return damage_stats_list
 
+
 def get_victim_damage(match_timeline_dto):
-    frames = match_timeline_dto["info"]["frames"]
-    match_id = match_timeline_dto["metadata"]["matchId"]
+    frames = match_timeline_dto.get("info", {}).get("frames", [])
+    match_id = match_timeline_dto.get("metadata", {}).get("matchId", "")
 
     damage_received_list = []
     damage_dealt_list = []
 
     for frame_number, frame in enumerate(frames):
-        for event_number, event in enumerate(frame["events"]):
-            if event["type"] == "CHAMPION_KILL":
-                for damage_number, damage_received in enumerate(event["victimDamageReceived"]):
+        for event_number, event in enumerate(frame.get("events", [])):
+            if event.get("type") == "CHAMPION_KILL":
+                for damage_received in event.get("victimDamageReceived", []):
                     received_values = {
                         "match_id": match_id,
-                        "participant_id": damage_received["participantId"],
-                        "basic": damage_received["basic"],
-                        "magic_damage": damage_received["magicDamage"],
-                        "physical_damage": damage_received["physicalDamage"],
-                        "name": damage_received["name"],
+                        "participant_id": damage_received.get("participantId"),
+                        "basic": damage_received.get("basic"),
+                        "magic_damage": damage_received.get("magicDamage"),
+                        "physical_damage": damage_received.get("physicalDamage"),
+                        "name": damage_received.get("name"),
                         "spell_name": damage_received.get("spellName", ""),
                         "spell_slot": damage_received.get("spellSlot", 0),
-                        "true_damage": damage_received["trueDamage"],
-                        "damage_type": damage_received["type"],
+                        "true_damage": damage_received.get("trueDamage"),
+                        "damage_type": damage_received.get("type"),
                     }
 
                     damage_received_list.append(received_values)
 
-                for damage_number, damage_dealt in enumerate(event["victimDamageDealt"]):
+                for damage_dealt in event.get("victimDamageDealt", []):
                     dealt_values = {
                         "match_id": match_id,
-                        "participant_id": damage_dealt["participantId"],
-                        "basic": damage_dealt["basic"],
-                        "magic_damage": damage_dealt["magicDamage"],
-                        "physical_damage": damage_dealt["physicalDamage"],
-                        "name": damage_dealt["name"],
+                        "participant_id": damage_dealt.get("participantId"),
+                        "basic": damage_dealt.get("basic"),
+                        "magic_damage": damage_dealt.get("magicDamage"),
+                        "physical_damage": damage_dealt.get("physicalDamage"),
+                        "name": damage_dealt.get("name"),
                         "spell_name": damage_dealt.get("spellName", ""),
                         "spell_slot": damage_dealt.get("spellSlot", 0),
-                        "true_damage": damage_dealt["trueDamage"],
-                        "damage_type": damage_dealt["type"],
+                        "true_damage": damage_dealt.get("trueDamage"),
+                        "damage_type": damage_dealt.get("type"),
                     }
 
                     damage_dealt_list.append(dealt_values)
@@ -232,13 +304,13 @@ def get_victim_damage(match_timeline_dto):
 def get_challenges(match_dto):
     challenges_list = []
 
-    participants = match_dto["info"]["participants"]
+    participants = match_dto.get("info").get("participants")
     for participant in participants:
-        challenges = participant["challenges"]
+        challenges = participant.get("challenges")
         
         values = {
-            "match_id": match_dto["metadata"]["matchId"],
-            "participant_id": participant["participantId"],
+            "match_id": match_dto.get("metadata").get("matchId"),
+            "participant_id": participant.get("participantId"),
             "assistStreakCount": challenges.get("assistStreakCount", 0),
             "abilityUses": challenges.get("abilityUses", 0),
             "acesBefore15Minutes": challenges.get("acesBefore15Minutes", 0),
@@ -356,50 +428,50 @@ def get_challenges(match_dto):
     return challenges_list
 
 def get_match_events(match_timeline_dto):
-    frames = match_timeline_dto.info.frames
-    match_id = match_timeline_dto.metadata.matchId
+    frames = match_timeline_dto.get('info', {}).get('frames', [])
+    match_id = match_timeline_dto.get('metadata', {}).get('matchId', None)
 
     events_list = []
     for frame_number, frame in enumerate(frames):
-        for event_number, event in enumerate(frame.events):
+        for event_number, event in enumerate(frame.get('events', [])):
             events_dict = {
                 'match_id': match_id,
                 'frame_number': frame_number,
                 'event_number': event_number,
-                'real_timestamp': getattr(event, "realTimestamp", None),
-                'timestamp': getattr(event, "timestamp", None),
-                'type': getattr(event, "type", None),
-                'item_id': getattr(event, "itemId", None),
-                'participant_id': getattr(event, "participantId", None),
-                'level_up_type': getattr(event, "levelUpType", ""),
-                'skill_slot': getattr(event, "skillSlot", None),
-                'creator_id': getattr(event, "creatorId", None),
-                'ward_type': getattr(event, "wardType", ""),
-                'level': getattr(event, "level", None),
-                'bounty': getattr(event, "bounty", None),
-                'kill_streak_length': getattr(event, "killStreakLength", None),
-                'killer_id': getattr(event, "killerId", None),
-                'position_x': getattr(event, "position", {}).get("x", None),
-                'position_y': getattr(event, "position", {}).get("y", None),
-                'victim_id': getattr(event, "victimId", None),
-                'kill_type': getattr(event, "killType", ""),
-                'lane_type': getattr(event, "laneType", ""),
-                'team_id': getattr(event, "teamId", None),
-                'multi_kill_length': getattr(event, "multiKillLength", None),
-                'killer_team_id': getattr(event, "killerTeamId", None),
-                'monster_type': getattr(event, "monsterType", ""),
-                'monster_sub_type': getattr(event, "monsterSubType", ""),
-                'building_type': getattr(event, "buildingType", ""),
-                'tower_type': getattr(event, "towerType", ""),
-                'after_id': getattr(event, "afterId", None),
-                'before_id': getattr(event, "beforeId", None),
-                'gold_gain': getattr(event, "goldGain", None),
-                'game_id': getattr(event, "gameId", None),
-                'winning_team': getattr(event, "winningTeam", None),
-                'transform_type': getattr(event, "transformType", ""),
-                'name': getattr(event, "name", ""),
-                'shutdown_bounty': getattr(event, "shutdownBounty", None),
-                'actual_start_time': getattr(event, "actualStartTime", None)
+                'real_timestamp': event.get("realTimestamp", None),
+                'timestamp': event.get("timestamp", None),
+                'type': event.get("type", None),
+                'item_id': event.get("itemId", None),
+                'participant_id': event.get("participantId", None),
+                'level_up_type': event.get("levelUpType", ""),
+                'skill_slot': event.get("skillSlot", None),
+                'creator_id': event.get("creatorId", None),
+                'ward_type': event.get("wardType", ""),
+                'level': event.get("level", None),
+                'bounty': event.get("bounty", None),
+                'kill_streak_length': event.get("killStreakLength", None),
+                'killer_id': event.get("killerId", None),
+                'position_x': event.get("position", {}).get("x", None),
+                'position_y': event.get("position", {}).get("y", None),
+                'victim_id': event.get("victimId", None),
+                'kill_type': event.get("killType", ""),
+                'lane_type': event.get("laneType", ""),
+                'team_id': event.get("teamId", None),
+                'multi_kill_length': event.get("multiKillLength", None),
+                'killer_team_id': event.get("killerTeamId", None),
+                'monster_type': event.get("monsterType", ""),
+                'monster_sub_type': event.get("monsterSubType", ""),
+                'building_type': event.get("buildingType", ""),
+                'tower_type': event.get("towerType", ""),
+                'after_id': event.get("afterId", None),
+                'before_id': event.get("beforeId", None),
+                'gold_gain': event.get("goldGain", None),
+                'game_id': event.get("gameId", None),
+                'winning_team': event.get("winningTeam", None),
+                'transform_type': event.get("transformType", ""),
+                'name': event.get("name", ""),
+                'shutdown_bounty': event.get("shutdownBounty", None),
+                'actual_start_time': event.get("actualStartTime", None)
             }
 
             events_list.append(events_dict)
@@ -407,8 +479,8 @@ def get_match_events(match_timeline_dto):
     return events_list
 
 def get_participant_dto(match_dto):
-    participants = match_dto["info"]["participants"]
-    match_id = match_dto["metadata"]["matchId"]
+    participants = match_dto.get("info").get("participants")
+    match_id = match_dto.get("metadata").get("matchId")
 
     participant_dto_list = []
 
@@ -530,26 +602,27 @@ def get_participant_dto(match_dto):
     return participant_dto_list
 
 def get_participant_frames(match_timeline_dto):
-    frames = match_timeline_dto.info.frames
-    match_id = match_timeline_dto.metadata.match_id
+    frames = match_timeline_dto.get('info', {}).get('frames', [])
+    match_id = match_timeline_dto.get('metadata', {}).get('match_id', None)
 
     participant_frames_list = []
 
     for frame_number, frame in enumerate(frames):
-        participant_frames = frame.participant_frames
+        participant_frames = frame.get('participant_frames', {})
 
         for participant_id, participant_frame in participant_frames.items():
-            # Access attributes using dot notation
-            participant_id = participant_frame.participant_id
-            timestamp = frame.timestamp  # Assuming Frame class has a 'timestamp' attribute
-            level = participant_frame.level
-            current_gold = participant_frame.current_gold
-            gold_per_second = participant_frame.gold_per_second
-            total_gold = participant_frame.total_gold
-            xp = participant_frame.xp
-            minions_killed = participant_frame.minions_killed
-            jungle_minions_killed = participant_frame.jungle_minions_killed
-            time_enemy_spent_controlled = participant_frame.time_enemy_spent_controlled
+            # Access attributes using .get method
+            participant_id = participant_frame.get('participant_id', None)
+            timestamp = frame.get('timestamp', None)  # Assuming Frame class has a 'timestamp' attribute
+            level = participant_frame.get('level', None)
+            current_gold = participant_frame.get('current_gold', None)
+            gold_per_second = participant_frame.get('gold_per_second', None)
+            total_gold = participant_frame.get('total_gold', None)
+            xp = participant_frame.get('xp', None)
+            minions_killed = participant_frame.get('minions_killed', None)
+            jungle_minions_killed = participant_frame.get('jungle_minions_killed', None)
+            time_enemy_spent_controlled = participant_frame.get('time_enemy_spent_controlled', None)
+
 
             position_x = participant_frame.position["x"]
             position_y = participant_frame.position["y"]
@@ -581,3 +654,12 @@ def insert_participant_frames(match_timeline_dto):
     helper = SQLHelper()
     for pframes in participant_frames_list:
         helper.insert_dict("participant_frames", pframes)
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python script.py <match_id>")
+        sys.exit(1)
+
+    match_id = sys.argv[1]
+    main(match_id)
