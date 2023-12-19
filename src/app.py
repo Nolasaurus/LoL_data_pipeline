@@ -4,6 +4,7 @@ from api_client import API_Client
 import postgres_helperfile
 from insert_match import insert_match
 from match_classes import SummonerDto
+import pandas as pd
 
 DEV_MODE = False # postgres
 
@@ -53,10 +54,11 @@ def main():
 
                 if user_query.strip().lower().startswith("select"):
                     rows = cursor.fetchall()
-                    st.write(rows)
-                else:
-                    conn.commit()
-                    st.success("Query executed successfully")
+
+                    # Convert to pandas DataFrame
+                    df = pd.DataFrame(rows, columns=[desc[0] for desc in cursor.description])
+                    st.dataframe(df)  # Display in tabular format
+
 
         except psycopg2.Error as e:
             if "permission denied" in str(e).lower():
