@@ -1,5 +1,4 @@
-from insert_match import get_champion_stats, get_bans, get_teams
-from match_classes import MatchDto, MatchTimelineDto
+from insert_match import get_champion_stats, get_bans, get_teams, get_match_metadata
 from unittest import TestCase
 import pytest
 import json
@@ -87,7 +86,6 @@ class TestGetBansFunction(TestCase):
 class TestGetTeams(TestCase):
 
     def test_get_teams(self):
-        # Assuming match_dto is already created from the JSON data
         teams = get_teams(match_json)
 
         # Assert the basic structure
@@ -126,5 +124,27 @@ class TestGetTeams(TestCase):
         self.assertTrue(teams[1]['tower_first'])
         self.assertEqual(teams[1]['tower_kills'], 4)
         self.assertTrue(teams[1]['win'])
+
+
+class TestGetMatchMetadata(TestCase):
+
+    def test_get_match_metadata(self):
+        match_metadata = get_match_metadata(match_json)
+
+        self.assertEqual(match_metadata['match_id'], 'NA1_4729149632')
+        self.assertEqual(match_metadata['data_version'],'2')
+        self.assertEqual(match_metadata['game_creation'],1690599967579)
+        self.assertEqual(match_metadata['game_duration'],1178)
+        self.assertEqual(match_metadata['game_end_timestamp'],1690601198047)
+        self.assertEqual(match_metadata['game_id'],4729149632)
+        self.assertEqual(match_metadata['game_mode'],'ARAM')
+        self.assertEqual(match_metadata['game_name'],'teambuilder-match-4729149632')
+        self.assertEqual(match_metadata['game_start_timestamp'],1690600019437)
+        self.assertEqual(match_metadata['game_type'],'MATCHED_GAME')
+        self.assertEqual(match_metadata['game_version'],'13.14.522.7601')
+        self.assertEqual(match_metadata['map_id'],12)
+        self.assertEqual(match_metadata['platform_id'],'NA1')
+        self.assertEqual(match_metadata['queue_id'],450)
+        self.assertEqual(match_metadata['tournament_code'],'')
 
 
