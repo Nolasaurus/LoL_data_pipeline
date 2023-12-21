@@ -196,16 +196,16 @@ def get_perk_style_selections(match_dto):
 
 def get_teams(match_dto):
     metadata = match_dto.get("metadata", {})
-    match_id = metadata.get("match_id", "")
+    match_id = metadata.get("matchId", "")
     teams = match_dto.get("info", {}).get("teams", [])
 
     teams_list = []
     for team in teams:
         # Extracting objectives data
-        objectives = team.get("objectives", {}).get("objectives", {})
+        objectives = team.get("objectives", {})
 
         team_data = {
-            'team_id': team.get("team_id", ""),
+            'team_id': team.get("teamId", ""),
             'match_id': match_id,
             'baron_first': objectives.get('baron', {}).get('first', False),
             'baron_kills': objectives.get('baron', {}).get('kills', 0),
