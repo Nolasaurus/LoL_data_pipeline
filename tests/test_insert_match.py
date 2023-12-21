@@ -17,50 +17,57 @@ with open(match_timeline_data_filepath, 'r') as file:
 
 class TestGetChampionStats(TestCase):
     def test_get_champion_stats(self):
-        # Assuming match_timeline_dto is already created from the test data
-        actual_values_list = get_champion_stats(match_timeline_json)
+        # DataFrame
+        champion_stats = get_champion_stats(match_timeline_json)
 
-        def extract_values_by_frame_and_participant(values_list, target_frame_number, target_participant_id):
-            extracted_values = []
-            for values_dict in values_list:
-                if values_dict["frame_number"] == target_frame_number and values_dict["participant_id"] == target_participant_id:
-                    return values_dict  # Return the matching dictionary
+        frame_number_to_extract = 3
+        participant_id_to_extract = '1'
 
-            # Return an empty dictionary when no match is found
-            return {}
+        sample_stats = champion_stats.loc[(champion_stats['frame_number'] == frame_number_to_extract) & 
+                                  (champion_stats['participant_id'] == participant_id_to_extract)]
+        
+        self.assertFalse(sample_stats.empty, "The DataFrame 'sample_stats' is unexpectedly empty.")
 
-        frame_number_to_extract = 1  # Replace with the desired frame number
-        participant_id_to_extract = 1  # Replace with the desired participant ID
 
-        sample_stats = extract_values_by_frame_and_participant(actual_values_list, frame_number_to_extract, participant_id_to_extract)
-        self.assertNotEqual(sample_stats, {})
-        # Check the length of the result
-        expected_length = len(match_timeline_json.info.frames) * len(match_timeline_json.info.frames[0].participant_frames)
-        self.assertEqual(len(actual_values_list), expected_length)
+        expected_length = len(match_timeline_json['info']['frames']) * len(match_timeline_json['info']['frames'][0]['participantFrames'])
+        expected_cols = [
+                        "match_id", "frame_number", "timestamp", "participant_id",
+                        "ability_haste", "ability_power", "armor", "armor_pen", "armor_pen_percent",
+                        "attack_damage", "attack_speed", "bonus_armor_pen_percent", "bonus_magic_pen_percent",
+                        "cc_reduction", "cooldown_reduction", "health", "health_max", "health_regen", "lifesteal",
+                        "magic_pen", "magic_pen_percent", "magic_resist", "movement_speed",
+                        "omnivamp", "physical_vamp", "power", "power_max", "power_regen", "spell_vamp"
+                        ]
 
-        self.assertEqual(sample_stats['armor'], 0)
-        self.assertEqual(sample_stats['armor_pen'], 0)
-        self.assertEqual(sample_stats['armorPenPercent'], 0.0)
-        self.assertEqual(sample_stats['attackDamage'], 68)
-        self.assertEqual(sample_stats['attackSpeed'], 167)
-        self.assertEqual(sample_stats['bonusArmorPenPercent'], 0.0)
-        self.assertEqual(sample_stats['bonusMagicPenPercent'], 0.0)
-        self.assertEqual(sample_stats['ccReduction'], 0)
-        self.assertEqual(sample_stats['cooldownReduction'], 0)
-        self.assertEqual(sample_stats['health'], 292)
-        self.assertEqual(sample_stats['healthMax'], 834)
-        self.assertEqual(sample_stats['healthRegen'], 14)
-        self.assertEqual(sample_stats['lifesteal'], 0.0)
-        self.assertEqual(sample_stats['magicPen'], 0)
-        self.assertEqual(sample_stats['magicPenPercent'], 0.0)
-        self.assertEqual(sample_stats['magicResist'], 51)
-        self.assertEqual(sample_stats['movementSpeed'], 340)
-        self.assertEqual(sample_stats['omnivamp'], 0.0)
-        self.assertEqual(sample_stats['physicalVamp'], 0.0)
-        self.assertEqual(sample_stats['power'], 0)
-        self.assertEqual(sample_stats['powerMax'], 60)
-        self.assertEqual(sample_stats['powerRegen'], 0)
-        self.assertEqual(sample_stats['spellVamp'], 0.0)
+        self.assertEqual(list(sample_stats.columns), expected_cols)
+        self.assertEqual(len(champion_stats), expected_length)
+
+        self.assertEqual(sample_stats['ability_haste'].iloc[0], 0)
+        self.assertEqual(sample_stats['ability_power'].iloc[0], 0)
+        self.assertEqual(sample_stats['armor'].iloc[0], 52)
+        self.assertEqual(sample_stats['armor_pen'].iloc[0], 0)
+        self.assertEqual(sample_stats['armor_pen_percent'].iloc[0], 0)
+        self.assertEqual(sample_stats['attack_damage'].iloc[0], 95)
+        self.assertEqual(sample_stats['attack_speed'].iloc[0], 170)
+        self.assertEqual(sample_stats['bonus_armor_pen_percent'].iloc[0], 0)
+        self.assertEqual(sample_stats['bonus_magic_pen_percent'].iloc[0], 0)
+        self.assertEqual(sample_stats['cc_reduction'].iloc[0], 0)
+        self.assertEqual(sample_stats['cooldown_reduction'].iloc[0], 0)
+        self.assertEqual(sample_stats['health'].iloc[0], 724)
+        self.assertEqual(sample_stats['health_max'].iloc[0], 915)
+        self.assertEqual(sample_stats['health_regen'].iloc[0], 15)
+        self.assertEqual(sample_stats['lifesteal'].iloc[0], 0.0)
+        self.assertEqual(sample_stats['magic_pen'].iloc[0], 0)
+        self.assertEqual(sample_stats['magic_pen_percent'].iloc[0], 0.0)
+        self.assertEqual(sample_stats['magic_resist'].iloc[0], 53)
+        self.assertEqual(sample_stats['movement_speed'].iloc[0], 340)
+        self.assertEqual(sample_stats['omnivamp'].iloc[0], 0.0)
+        self.assertEqual(sample_stats['physical_vamp'].iloc[0], 0.0)
+        self.assertEqual(sample_stats['power'].iloc[0], 0)
+        self.assertEqual(sample_stats['power_max'].iloc[0], 60)
+        self.assertEqual(sample_stats['power_regen'].iloc[0], 0)
+        self.assertEqual(sample_stats['spell_vamp'].iloc[0], 0.0)
+
 
 
 class TestGetBansFunction(TestCase):
