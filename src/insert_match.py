@@ -3,6 +3,7 @@ from api_client import API_Client
 import sys
 import os
 import json
+import pandas as pd
 
 import logging
 
@@ -97,16 +98,19 @@ def get_bans(match_dto):
     return all_values
 
 def get_champion_stats(match_timeline_dto):
+    # returns df containing champion stats
     frames = match_timeline_dto.get('info', {}).get('frames', [])
     match_id = match_timeline_dto.get('metadata', {}).get('match_id', '')
 
     values_list = []
     for frame_number, frame in enumerate(frames):
-        for participant_id, participant_frame in frame.get('participant_frames', {}).items():
-            champion_stats = participant_frame.get('champion_stats', {})
+        for participant_id, participant_frame in frame.get('participantFrames', {}).items():
+            champion_stats = participant_frame.get('championStats', {})
+
             values = {
                 "match_id": match_id,
                 "frame_number": frame_number,
+                "timestamp": frame.get('timestamp', None),
                 "participant_id": participant_id,
                 "ability_haste": champion_stats.get("abilityHaste", 0),
                 "ability_power": champion_stats.get("abilityPower", 0),
@@ -118,6 +122,7 @@ def get_champion_stats(match_timeline_dto):
                 "bonus_armor_pen_percent": champion_stats.get("bonusArmorPenPercent", 0.0),
                 "bonus_magic_pen_percent": champion_stats.get("bonusMagicPenPercent", 0.0),
                 "cc_reduction": champion_stats.get("ccReduction", 0),
+                "cooldown_reduction": champion_stats.get("cooldownReduction", 0),
                 "health": champion_stats.get("health", 0),
                 "health_max": champion_stats.get("healthMax", 0),
                 "health_regen": champion_stats.get("healthRegen", 0),
@@ -136,7 +141,7 @@ def get_champion_stats(match_timeline_dto):
 
             values_list.append(values)
 
-    return values_list
+    return pd.DataFrame(values_list)
 
 
 def get_match_metadata(match_dto):
