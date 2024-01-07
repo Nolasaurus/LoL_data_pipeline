@@ -20,6 +20,9 @@ def main(match_id):
     match_dto = api_client.get_match_by_match_id(match_id)
     match_timeline_dto = api_client.get_match_timeline(match_id)
 
+    if match_dto is None or match_timeline_dto is None:
+        raise Exception('Riot API call failed. Check API key.')
+
     # Save to cache
     save_to_cache(f"match_{match_id}.json", match_dto)
     save_to_cache(f"timeline_{match_id}.json", match_timeline_dto)
@@ -61,7 +64,7 @@ def save_to_cache(filename, data):
         json.dump(data, file)
 
 def insert_match(match_dto, match_timeline_dto):
-    logging.info(f"Inserting match data for match DTO and timeline DTO")
+    logging.info("Inserting match data for %s match DTO and timeline DTO", match_dto.metadata.match_id)
     add_df_to_table("match_metadata", get_match_metadata(match_dto))
     add_df_to_table("perk_style_selections", get_perk_style_selections(match_dto))
     add_df_to_table("participant_dto", get_participant_dto(match_dto))

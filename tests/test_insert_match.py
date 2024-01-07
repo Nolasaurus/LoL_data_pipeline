@@ -1,4 +1,4 @@
-from insert_match import get_champion_stats, get_bans, get_teams
+from extract_data import get_champion_stats, get_bans, get_teams
 from match_classes import MatchDto, MatchTimelineDto
 from unittest import TestCase
 import pytest
