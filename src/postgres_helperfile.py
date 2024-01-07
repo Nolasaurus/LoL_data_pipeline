@@ -136,6 +136,7 @@ def add_df_to_table(table_name, data_df):
                     return
 
                 values = [tuple(row) for row in data_df.values]
+
                 insert_stmt = f"INSERT INTO {table_name} ({','.join(df_columns)}) VALUES %s"
                 execute_values(cursor, insert_stmt, values)
                 conn.commit()
@@ -147,3 +148,21 @@ def add_df_to_table(table_name, data_df):
         logging.error("Database error occurred: %s", e)
     except Exception as e:
         logging.error("An unexpected error occurred: %s", e)
+
+
+def match_id_is_in_table(table_name, match_id):
+    try:
+        with connect_db() as conn:
+            with conn.cursor() as cursor:
+                # Ensure table_name is safe to use in the query
+                # Example: validate table_name against a list of known table names
+
+                query = f"SELECT match_id FROM {table_name} WHERE match_id = %s"
+                cursor.execute(query, [match_id])
+                result = cursor.fetchone()  # Fetch one record from the query result
+                return result is not None   # Return True if a record is found, otherwise False
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+

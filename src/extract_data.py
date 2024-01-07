@@ -1,9 +1,4 @@
-from postgres_helperfile import SQLHelper, add_df_to_table
-from api_client import API_Client
 import sys
-import os
-import json
-
 import logging
 
 logging.basicConfig(
@@ -11,74 +6,6 @@ logging.basicConfig(
     level=logging.INFO, 
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
-
-
-def main(match_id):
-    logging.info(f"Starting main process for match ID: {match_id}")
-    api_client = API_Client()
-    # get match_dto, match_timeline_dto
-    match_dto = api_client.get_match_by_match_id(match_id)
-    match_timeline_dto = api_client.get_match_timeline(match_id)
-
-    if match_dto is None or match_timeline_dto is None:
-        raise Exception('Riot API call failed. Check API key.')
-
-    # Save to cache
-    save_to_cache(f"match_{match_id}.json", match_dto)
-    save_to_cache(f"timeline_{match_id}.json", match_timeline_dto)
-
-    # try to insert
-    try:
-        insert_match(match_dto, match_timeline_dto)
-    except Exception as e:
-        logging.error(f"Failed to insert match data for match ID {match_id}: {e}")
-        print(f"Failed to insert match data: {e}")
-        raise
-
-    # Upon successful insertion, clean up cache
-    cleanup_cache(match_id)
-
-def cleanup_cache(match_id):
-    cache_dir = "./cache"
-    match_file = os.path.join(cache_dir, f"match_{match_id}.json")
-    timeline_file = os.path.join(cache_dir, f"timeline_{match_id}.json")
-
-    try:
-        if os.path.exists(match_file):
-            os.remove(match_file)
-            logging.info(f"Deleted cache file: {match_file}")
-
-        if os.path.exists(timeline_file):
-            os.remove(timeline_file)
-            logging.info(f"Deleted cache file: {timeline_file}")
-    except Exception as e:
-        logging.error(f"Failed to clean up cache for match ID {match_id}: {e}")
-
-
-def save_to_cache(filename, data):
-    """Save data to a file in the cache directory."""
-    cache_dir = "./cache"  # Change to a relative path
-    os.makedirs(cache_dir, exist_ok=True)  # Create the cache directory if it doesn't exist
-    file_path = os.path.join(cache_dir, filename)
-    with open(file_path, 'w') as file:
-        json.dump(data, file)
-
-def insert_match(match_dto, match_timeline_dto):
-    logging.info("Inserting match data for %s match DTO and timeline DTO", match_dto.metadata.match_id)
-    add_df_to_table("match_metadata", get_match_metadata(match_dto))
-    add_df_to_table("perk_style_selections", get_perk_style_selections(match_dto))
-    add_df_to_table("participant_dto", get_participant_dto(match_dto))
-    add_df_to_table("challenges", get_challenges(match_dto))
-    add_df_to_table("participant_frames", get_participant_frames(match_timeline_dto))
-    add_df_to_table("champion_stats", get_champion_stats(match_timeline_dto))
-    add_df_to_table("match_events", get_match_events(match_timeline_dto))
-    damage_received_list, damage_dealt_list = get_victim_damage(match_timeline_dto)
-    add_df_to_table("victim_damage_dealt", damage_dealt_list)
-    add_df_to_table("victim_damage_received", damage_received_list)
-    add_df_to_table("damage_stats", get_damage_stats(match_timeline_dto))
-    add_df_to_table("teams", get_teams(match_dto))
-    add_df_to_table("bans", get_bans(match_dto))
-    logging.info(f"Data insertion for match completed successfully")
     
 def get_bans(match_dto):
     metadata = match_dto.get("metadata", {})
@@ -260,12 +187,11 @@ def get_damage_stats(match_timeline_dto):
     return damage_stats_list
 
 
-def get_victim_damage(match_timeline_dto):
+def get_victim_damage_received(match_timeline_dto):
     frames = match_timeline_dto.get("info", {}).get("frames", [])
     match_id = match_timeline_dto.get("metadata", {}).get("matchId", "")
 
     damage_received_list = []
-    damage_dealt_list = []
 
     for frame_number, frame in enumerate(frames):
         for event_number, event in enumerate(frame.get("events", [])):
@@ -286,6 +212,17 @@ def get_victim_damage(match_timeline_dto):
 
                     damage_received_list.append(received_values)
 
+    return damage_received_list
+
+def get_victim_damage_dealt(match_timeline_dto):
+    frames = match_timeline_dto.get("info", {}).get("frames", [])
+    match_id = match_timeline_dto.get("metadata", {}).get("matchId", "")
+
+    damage_dealt_list = []
+
+    for frame_number, frame in enumerate(frames):
+        for event_number, event in enumerate(frame.get("events", [])):
+            if event.get("type") == "CHAMPION_KILL":
                 for damage_dealt in event.get("victimDamageDealt", []):
                     dealt_values = {
                         "match_id": match_id,
@@ -302,7 +239,8 @@ def get_victim_damage(match_timeline_dto):
 
                     damage_dealt_list.append(dealt_values)
 
-    return damage_received_list, damage_dealt_list
+    return damage_dealt_list
+
 
 def get_challenges(match_dto):
     challenges_list = []
@@ -651,18 +589,3 @@ def get_participant_frames(match_timeline_dto):
 
     return participant_frames_list
 
-def insert_participant_frames(match_timeline_dto):
-    participant_frames_list = get_participant_frames(match_timeline_dto)
-    # batch insert
-    helper = SQLHelper()
-    for pframes in participant_frames_list:
-        helper.insert_dict("participant_frames", pframes)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python script.py <match_id>")
-        sys.exit(1)
-
-    match_id = sys.argv[1]
-    main(match_id)
