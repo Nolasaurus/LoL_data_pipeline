@@ -60,28 +60,33 @@ class API_Client:
 
         # Common code to make an HTTP request to the API
         try:
-            response = requests.get(url, timeout=timeout)
+            response = requests.get(url, timeout=2)
+            response.raise_for_status()  # Raises HTTPError for 4xx/5xx responses
 
-            if response.status_code == 200:
-                return response.json()
-            elif response.status_code == 403:
-                raise APIKeyExpiredError(f"403: Riot API key expired, {response}")
-            elif response.status_code == 429:
-                raise RateLimitExceededError(
-                    "429: Rate limited. Too many API calls recently"
-                )
-            else:
-                print(f"Error: {response.status_code}")
-                return None
+            return response.json()
+        
+        except requests.exceptions.HTTPError as e:
+            if response.status_code == 403:
+                logging.error("403 Forbidden: API key may have expired.")
+                raise APIKeyExpiredError("403: Riot API key expired.") from e
+            
+            if response.status_code == 429:
+                logging.error("429 Too Many Requests: Rate limit exceeded.")
+                raise RateLimitExceededError("429: Rate limited. Too many API calls recently.") from e
+
+            logging.error("HTTP error occurred: %s", e)
+            return None
 
         except requests.exceptions.Timeout:
-            logging.error(f"Request timed out for url: {url}")
+            logging.error("Request timed out for URL: %s", url)
             return None
+
         except requests.exceptions.RequestException as e:
-            logging.error("Request exception: %s", e)
+            logging.error("Request exception for URL: %s - %s", url, e)
             return None
+
         except Exception as e:
-            logging.error("An unexpected error occurred during request: %s", e)
+            logging.error("An unexpected error occurred during request to %s: %s", url, e)
             return None
 
     def get_summoner_by_name(self, summoner_name):
