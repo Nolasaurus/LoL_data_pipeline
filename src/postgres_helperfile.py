@@ -132,17 +132,18 @@ def add_df_to_table(table_name, data_df):
                 df_columns = data_df.columns.tolist()
 
                 if db_columns != df_columns:
-                    print("Columns in df do not match cols in db table. Aborted.")
+                    logging.info("Columns in df do not match cols in db table. Aborted.")
                     return
 
                 values = [tuple(row) for row in data_df.values]
                 insert_stmt = f"INSERT INTO {table_name} ({','.join(df_columns)}) VALUES %s"
                 execute_values(cursor, insert_stmt, values)
                 conn.commit()
+                logging.info("Data inserted successfully into %s", table_name)
 
     except IntegrityError as e:
-        print(f"Integrity error occurred: {e}")
+        logging.error("Integrity error occurred: %s", e)
     except DatabaseError as e:
-        print(f"Database error occurred: {e}")
+        logging.error("Database error occurred: %s", e)
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        logging.error("An unexpected error occurred: %s", e)
