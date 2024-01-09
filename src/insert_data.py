@@ -1,12 +1,12 @@
 import os
 import logging
 import json
-
 from api_client import API_Client
 from extract_data import *
-from postgres_helperfile import SQLHelper, add_df_to_table, match_id_is_in_table
+from postgres_helperfile import create_engine
 
-def main(match_id):
+
+def cached_insert(match_id):
     logging.info("Starting main process for match ID: %s", match_id)
     api_client = API_Client()
     # get match_dto, match_timeline_dto
@@ -14,7 +14,7 @@ def main(match_id):
     match_timeline_dto = api_client.get_match_timeline(match_id)
 
     if match_dto is None or match_timeline_dto is None:
-        raise Exception('Riot API call failed. Check API key.')
+        raise Exception("Riot API call failed. Check API key.")
 
     # Save to cache
     save_to_cache(f"match_{match_id}.json", match_dto)
@@ -24,12 +24,13 @@ def main(match_id):
     try:
         insert_match(match_dto, match_timeline_dto)
     except Exception as e:
-        logging.error(f"Failed to insert match data for match ID {match_id}: {e}")
+        logging.error("Failed to insert match data for match ID %s: %s", match_id, e)
         print(f"Failed to insert match data: {e}")
         raise
 
     # Upon successful insertion, clean up cache
     cleanup_cache(match_id)
+
 
 def cleanup_cache(match_id):
     cache_dir = "./cache"
@@ -51,53 +52,53 @@ def cleanup_cache(match_id):
 def save_to_cache(filename, data):
     """Save data to a file in the cache directory."""
     cache_dir = "./cache"  # Change to a relative path
-    os.makedirs(cache_dir, exist_ok=True)  # Create the cache directory if it doesn't exist
+    os.makedirs(
+        cache_dir, exist_ok=True
+    )  # Create the cache directory if it doesn't exist
     file_path = os.path.join(cache_dir, filename)
-    with open(file_path, 'w') as file:
+    with open(file_path, "w") as file:
         json.dump(data, file)
-
-def insert_participant_frames(table_name, participant_frames_list):
-    helper = SQLHelper()
-    for pframes in participant_frames_list:
-        helper.insert_dict(table_name, pframes)
 
 
 def insert_match(match_dto, match_timeline_dto):
-    match_id = match_dto.metadata.match_id
+    data_match_id = match_dto.get("metadata").get("matchId")
+    # Ensure you have the correct parameters to create_engine here
+    engine = create_engine()  # Provide the correct database URL here
+    logging.info(
+        "Inserting match data for %s match DTO and timeline DTO", data_match_id
+    )
 
-    logging.info("Inserting match data for %s match DTO and timeline DTO", match_id)
-    # Dictionary mapping table names to their respective data retrieval functions
+    get_bans(match_dto).to_sql("bans", engine, if_exists="append", index=False)
+    get_challenges(match_dto).to_sql(
+        "challenges", engine, if_exists="append", index=False
+    )
+    get_champion_stats(match_timeline_dto).to_sql(
+        "champion_stats", engine, if_exists="append", index=False
+    )
+    get_damage_stats(match_timeline_dto).to_sql(
+        "damage_stats", engine, if_exists="append", index=False
+    )
+    get_match_events(match_timeline_dto).to_sql(
+        "match_events", engine, if_exists="append", index=False
+    )
+    get_match_metadata(match_dto).to_sql(
+        "match_metadata", engine, if_exists="append", index=False
+    )
+    get_participant_dto(match_dto).to_sql(
+        "participant_dto", engine, if_exists="append", index=False
+    )
+    get_participant_frames(match_timeline_dto).to_sql(
+        "participant_frames", engine, if_exists="append", index=False
+    )
+    get_perk_style_selections(match_dto).to_sql(
+        "perk_style_selections", engine, if_exists="append", index=False
+    )
+    get_teams(match_dto).to_sql("teams", engine, if_exists="append", index=False)
+    get_victim_damage_dealt(match_timeline_dto).to_sql(
+        "victim_damage_dealt", engine, if_exists="append", index=False
+    )
+    get_victim_damage_received(match_timeline_dto).to_sql(
+        "victim_damage_received", engine, if_exists="append", index=False
+    )
 
-    get_data_function_dict = {
-        'match_metadata': lambda: get_match_metadata(match_dto),
-        'perk_style_selections': lambda: get_perk_style_selections(match_dto),
-        'participant_dto': lambda: get_participant_dto(match_dto),
-        'challenges': lambda: get_challenges(match_dto),
-        'victim_damage_dealt': get_victim_damage_dealt(match_timeline_dto),
-        'vicim_damage_received': get_victim_damage_received(match_timeline_dto),
-        'participant_frames': lambda: get_participant_frames(match_timeline_dto),
-        'champion_stats': lambda: get_champion_stats(match_timeline_dto),
-        'match_events': lambda: get_match_events(match_timeline_dto),
-        'damage_stats': lambda: get_damage_stats(match_timeline_dto),
-        'teams': lambda: get_teams(match_dto),
-        'bans': lambda: get_bans(match_dto)
-    }
-
-    # Check which tables do not have that match data
-    for table_name, get_data_function in get_data_function_dict.items():
-        if match_id_is_in_table(table_name, match_id):
-            if table_name == 'participant_frames':
-                insert_participant_frames(table_name, get_data_function)
-            else:
-                add_df_to_table(table_name, get_data_function)
-    
-    logging.info("Data insertion for match %s completed successfully", match_id)
-
-
-if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python script.py <match_id>")
-        sys.exit(1)
-
-    match_id = sys.argv[1]
-    main(match_id)
+    logging.info("Data insertion for match %s completed successfully", data_match_id)
