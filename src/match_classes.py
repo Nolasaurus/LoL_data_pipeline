@@ -1,8 +1,8 @@
-
 def camel_to_snake(name):
     import re
-    s1 = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
-    return re.sub('([a-z0-9])([A-Z])', r'\1_\2', s1).lower()
+
+    s1 = re.sub("(.)([A-Z][a-z]+)", r"\1_\2", name)
+    return re.sub("([a-z0-9])([A-Z])", r"\1_\2", s1).lower()
 
 
 class MatchTimelineDto:
@@ -27,7 +27,6 @@ class MatchTimelineDto:
             self.game_id = info_json["gameId"]
             self.participants = info_json["participants"]
 
-
         class Frame:
             def __init__(self, frame_json):
                 self.events = [self.Event(event) for event in frame_json["events"]]
@@ -36,7 +35,6 @@ class MatchTimelineDto:
                     for frame_number, frame in frame_json["participantFrames"].items()
                 }
                 self.timestamp = frame_json["timestamp"]
-
 
             class Event:
                 def __init__(self, event_json):
@@ -50,13 +48,17 @@ class MatchTimelineDto:
                     self.creator_id = event_json.get("creatorId", None)
                     self.ward_type = event_json.get("wardType", None)
                     self.level = event_json.get("level", None)
-                    self.assisting_participant_ids = event_json.get("assistingParticipantIds", None)
+                    self.assisting_participant_ids = event_json.get(
+                        "assistingParticipantIds", None
+                    )
                     self.bounty = event_json.get("bounty", None)
                     self.kill_streak_length = event_json.get("killStreakLength", None)
                     self.killer_id = event_json.get("killerId", None)
                     self.position = event_json.get("position", None)
                     self.victim_damage_dealt = event_json.get("victimDamageDealt", None)
-                    self.victim_damage_received = event_json.get("victimDamageReceived", None)
+                    self.victim_damage_received = event_json.get(
+                        "victimDamageReceived", None
+                    )
                     self.victim_id = event_json.get("victimId", None)
                     self.kill_type = event_json.get("killType", None)
                     self.lane_type = event_json.get("laneType", None)
@@ -77,8 +79,6 @@ class MatchTimelineDto:
                     self.shutdown_bounty = event_json.get("shutdownBounty", None)
                     self.actual_start_time = event_json.get("actualStartTime", None)
 
-
-
             class ParticipantFrame:
                 def __init__(self, p_frame_json):
                     self.champion_stats = self.ChampionStats(
@@ -98,7 +98,6 @@ class MatchTimelineDto:
                     self.total_gold = p_frame_json["totalGold"]
                     self.xp = p_frame_json["xp"]
 
-
                 class ChampionStats:
                     def __init__(self, champ_stats_json):
                         self.ability_haste = champ_stats_json["abilityHaste"]
@@ -108,8 +107,12 @@ class MatchTimelineDto:
                         self.armor_pen_percent = champ_stats_json["armorPenPercent"]
                         self.attack_damage = champ_stats_json["attackDamage"]
                         self.attack_speed = champ_stats_json["attackSpeed"]
-                        self.bonus_armor_pen_percent = champ_stats_json["bonusArmorPenPercent"]
-                        self.bonus_magic_pen_percent = champ_stats_json["bonusMagicPenPercent"]
+                        self.bonus_armor_pen_percent = champ_stats_json[
+                            "bonusArmorPenPercent"
+                        ]
+                        self.bonus_magic_pen_percent = champ_stats_json[
+                            "bonusMagicPenPercent"
+                        ]
                         self.cc_reduction = champ_stats_json["ccReduction"]
                         self.cooldown_reduction = champ_stats_json["cooldownReduction"]
                         self.health = champ_stats_json["health"]
@@ -127,21 +130,31 @@ class MatchTimelineDto:
                         self.power_regen = champ_stats_json["powerRegen"]
                         self.spell_vamp = champ_stats_json["spellVamp"]
 
-
-
                 class DamageStats:
                     def __init__(self, damage_stats_json):
                         self.magic_damage_done = damage_stats_json["magicDamageDone"]
-                        self.magic_damage_done_to_champions = damage_stats_json["magicDamageDoneToChampions"]
+                        self.magic_damage_done_to_champions = damage_stats_json[
+                            "magicDamageDoneToChampions"
+                        ]
                         self.magic_damage_taken = damage_stats_json["magicDamageTaken"]
-                        self.physical_damage_done = damage_stats_json["physicalDamageDone"]
-                        self.physical_damage_done_to_champions = damage_stats_json["physicalDamageDoneToChampions"]
-                        self.physical_damage_taken = damage_stats_json["physicalDamageTaken"]
+                        self.physical_damage_done = damage_stats_json[
+                            "physicalDamageDone"
+                        ]
+                        self.physical_damage_done_to_champions = damage_stats_json[
+                            "physicalDamageDoneToChampions"
+                        ]
+                        self.physical_damage_taken = damage_stats_json[
+                            "physicalDamageTaken"
+                        ]
                         self.total_damage_done = damage_stats_json["totalDamageDone"]
-                        self.total_damage_done_to_champions = damage_stats_json["totalDamageDoneToChampions"]
+                        self.total_damage_done_to_champions = damage_stats_json[
+                            "totalDamageDoneToChampions"
+                        ]
                         self.total_damage_taken = damage_stats_json["totalDamageTaken"]
                         self.true_damage_done = damage_stats_json["trueDamageDone"]
-                        self.true_damage_done_to_champions = damage_stats_json["trueDamageDoneToChampions"]
+                        self.true_damage_done_to_champions = damage_stats_json[
+                            "trueDamageDoneToChampions"
+                        ]
                         self.true_damage_taken = damage_stats_json["trueDamageTaken"]
 
 
@@ -151,7 +164,6 @@ class MatchDto:
         self.metadata = self.MetadataDto(json["metadata"])
         self.match_id = self.metadata.match_id
         self.info = self.InfoDto(json["info"])
-
 
     class MetadataDto:
         def __init__(self, metadata):
@@ -176,7 +188,6 @@ class MatchDto:
             self.queue_id = info["queueId"]
             self.teams = [self.TeamDto(t) for t in info["teams"]]
             self.tournament_code = info.get("tournamentCode", "")
-
 
         class ParticipantDto:
             """
@@ -238,10 +249,9 @@ class MatchDto:
                     ]:
                         if objective_name in data:
                             snake_case_objective_name = camel_to_snake(objective_name)
-                            self.objectives[snake_case_objective_name] = self.ObjectiveDto(
-                                data[objective_name]
-                            )
-
+                            self.objectives[
+                                snake_case_objective_name
+                            ] = self.ObjectiveDto(data[objective_name])
 
                 class ObjectiveDto:
                     def __init__(self, objective_json):
@@ -256,6 +266,7 @@ class MatchDto:
                 def __init__(self, ban_json):
                     self.champion_id = ban_json["championId"]
                     self.pick_turn = ban_json["pickTurn"]
+
 
 class SummonerDto:
     # Store summoner data as attributes
@@ -272,4 +283,3 @@ class SummonerDto:
         self.id = summoner_dto_json.get("id")
         self.puuid = summoner_dto_json.get("puuid")
         self.summoner_level = summoner_dto_json.get("summonerLevel")
-
