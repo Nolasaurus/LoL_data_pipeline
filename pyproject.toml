@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
 
 [tool.black]
 line-length = 88
@@ -28,31 +28,33 @@ testpaths = [
     "integration_tests",
 ]
 
-[project]
+[tool.poetry]
 name = "LOL_api"
 version = "0.1.0"
 description = "League of Legends API client and frontend"
-authors = [{name = "Nolan Meyer", email = "meyer09@gmail.com"}]
-license = {file = "LICENSE"}
+authors = ["Nolan Meyer <meyer09@gmail.com>"]
+license = "MIT"
 readme = "README.md"
-requires-python = ">=3.6"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 
-dependencies = [
-    "backend==0.2.4.1",
-    "matplotlib==3.8.1",
-    "pandas==2.1.3",
-    "psycopg2==2.9.9",
-    "python-dotenv==1.0.0",
-    "Requests==2.31.0",
-    "streamlit==1.28.2",
-    "selenium"
-]
+[tool.poetry.dependencies]
+python = ">3.9.7"
+backend = "^0.2.4.1"
+matplotlib = "^3.8.1"
+pandas = "^2.1.3"
+psycopg2 = "^2.9.9"
+python-dotenv = "^1.0.0"
+Requests = "^2.31.0"
+streamlit = "^1.28.2"
+sqlalchemy = "*"
 
+[tool.poetry.dev-dependencies]
+pytest = "*"
+selenium = "*"
 
 [project.optional-dependencies]
 test = ["pytest"]
