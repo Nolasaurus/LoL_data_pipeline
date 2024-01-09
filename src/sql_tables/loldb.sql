@@ -25,7 +25,7 @@ CREATE TABLE "perk_style_selections" (
   "var3" INT,
   "perks_description" VARCHAR(255),
   "perks_style" INT,
-  PRIMARY KEY ("match_id", "participant_id")
+  PRIMARY KEY ("match_id", "participant_id", "perks_style")
 );
 
 CREATE TABLE "participant_dto" (
@@ -313,7 +313,7 @@ CREATE TABLE "match_events" (
   "timestamp" BIGINT,
   "type" VARCHAR(255),
   "item_id" INT,
-  "participa_id" INT,
+  "participant_id" INT,
   "level_up_type" VARCHAR(255),
   "skill_slot" INT,
   "creator_id" INT,
