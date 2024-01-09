@@ -3,8 +3,13 @@ import logging
 import json
 from api_client import API_Client
 from extract_data import *
-from postgres_helperfile import create_engine
+from postgres_helperfile import create_postgres_engine
 
+logging.basicConfig(
+    filename="app.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
 
 def cached_insert(match_id):
     logging.info("Starting main process for match ID: %s", match_id)
@@ -62,43 +67,30 @@ def save_to_cache(filename, data):
 
 def insert_match(match_dto, match_timeline_dto):
     data_match_id = match_dto.get("metadata").get("matchId")
-    # Ensure you have the correct parameters to create_engine here
-    engine = create_engine()  # Provide the correct database URL here
+    engine = create_postgres_engine()  # Make sure this is correctly implemented
     logging.info(
         "Inserting match data for %s match DTO and timeline DTO", data_match_id
     )
 
-    get_bans(match_dto).to_sql("bans", engine, if_exists="append", index=False)
-    get_challenges(match_dto).to_sql(
-        "challenges", engine, if_exists="append", index=False
-    )
-    get_champion_stats(match_timeline_dto).to_sql(
-        "champion_stats", engine, if_exists="append", index=False
-    )
-    get_damage_stats(match_timeline_dto).to_sql(
-        "damage_stats", engine, if_exists="append", index=False
-    )
-    get_match_events(match_timeline_dto).to_sql(
-        "match_events", engine, if_exists="append", index=False
-    )
-    get_match_metadata(match_dto).to_sql(
-        "match_metadata", engine, if_exists="append", index=False
-    )
-    get_participant_dto(match_dto).to_sql(
-        "participant_dto", engine, if_exists="append", index=False
-    )
-    get_participant_frames(match_timeline_dto).to_sql(
-        "participant_frames", engine, if_exists="append", index=False
-    )
-    get_perk_style_selections(match_dto).to_sql(
-        "perk_style_selections", engine, if_exists="append", index=False
-    )
-    get_teams(match_dto).to_sql("teams", engine, if_exists="append", index=False)
-    get_victim_damage_dealt(match_timeline_dto).to_sql(
-        "victim_damage_dealt", engine, if_exists="append", index=False
-    )
-    get_victim_damage_received(match_timeline_dto).to_sql(
-        "victim_damage_received", engine, if_exists="append", index=False
-    )
+    # Function to handle the insertion and catch exceptions
+    def try_insert(df, table_name):
+        try:
+            df.to_sql(table_name, engine, if_exists="append", index=False)
+        except Exception as e:
+            logging.warning(f"Insertion to {table_name} failed: {e}")
+
+    # Use try_insert for each DataFrame insertion
+    try_insert(get_match_metadata(match_dto), "match_metadata")
+    try_insert(get_participant_dto(match_dto), "participant_dto")
+    try_insert(get_perk_style_selections(match_dto), "perk_style_selections")
+    try_insert(get_challenges(match_dto), "challenges")
+    try_insert(get_participant_frames(match_timeline_dto), "participant_frames")
+    try_insert(get_champion_stats(match_timeline_dto), "champion_stats")
+    try_insert(get_match_events(match_timeline_dto), "match_events")
+    try_insert(get_victim_damage_dealt(match_timeline_dto), "victim_damage_dealt")
+    try_insert(get_victim_damage_received(match_timeline_dto), "victim_damage_received")
+    try_insert(get_damage_stats(match_timeline_dto), "damage_stats")
+    try_insert(get_teams(match_dto), "teams")
+    try_insert(get_bans(match_dto), "bans")
 
     logging.info("Data insertion for match %s completed successfully", data_match_id)
