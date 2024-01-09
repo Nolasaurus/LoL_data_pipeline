@@ -1,5 +1,7 @@
+
 import sys
 import logging
+import pandas as pd
 
 logging.basicConfig(
     filename='app.log', 
@@ -24,7 +26,7 @@ def get_bans(match_dto):
             }
             all_values.append(ban_dict)
 
-    return all_values
+    return pd.DataFrame(all_values)
 
 def get_champion_stats(match_timeline_dto):
     frames = match_timeline_dto.get('info', {}).get('frames', [])
@@ -66,7 +68,7 @@ def get_champion_stats(match_timeline_dto):
 
             values_list.append(values)
 
-    return values_list
+    return pd.DataFrame(values_list)
 
 
 def get_match_metadata(match_dto):
@@ -91,7 +93,7 @@ def get_match_metadata(match_dto):
         'tournament_code': info.get("tournamentCode", "")
     }
 
-    return match_metadata_dict
+    return pd.DataFrame(match_metadata_dict)
 
 
 def get_perk_style_selections(match_dto):
@@ -116,7 +118,7 @@ def get_perk_style_selections(match_dto):
 
                 perk_style_selections_list.append(perk_style_selection_dict)
 
-    return perk_style_selections_list
+    return pd.DataFrame(perk_style_selections_list)
 
 
 def get_teams(match_dto):
@@ -149,7 +151,7 @@ def get_teams(match_dto):
 
         teams_list.append(team_data)
 
-    return teams_list
+    return pd.DataFrame(teams_list)
 
 
 def get_damage_stats(match_timeline_dto):
@@ -184,7 +186,7 @@ def get_damage_stats(match_timeline_dto):
 
             damage_stats_list.append(damage_stat_dict)
 
-    return damage_stats_list
+    return pd.DataFrame(damage_stats_list)
 
 
 def get_victim_damage_received(match_timeline_dto):
@@ -212,7 +214,7 @@ def get_victim_damage_received(match_timeline_dto):
 
                     damage_received_list.append(received_values)
 
-    return damage_received_list
+    return pd.DataFrame(damage_received_list)
 
 def get_victim_damage_dealt(match_timeline_dto):
     frames = match_timeline_dto.get("info", {}).get("frames", [])
@@ -239,7 +241,7 @@ def get_victim_damage_dealt(match_timeline_dto):
 
                     damage_dealt_list.append(dealt_values)
 
-    return damage_dealt_list
+    return pd.DataFrame(damage_dealt_list)
 
 
 def get_challenges(match_dto):
@@ -248,125 +250,126 @@ def get_challenges(match_dto):
     participants = match_dto.get("info").get("participants")
     for participant in participants:
         challenges = participant.get("challenges")
-        
+
         values = {
             "match_id": match_dto.get("metadata").get("matchId"),
             "participant_id": participant.get("participantId"),
-            "assistStreakCount": challenges.get("assistStreakCount", 0),
-            "abilityUses": challenges.get("abilityUses", 0),
-            "acesBefore15Minutes": challenges.get("acesBefore15Minutes", 0),
-            "alliedJungleMonsterKills": challenges.get("alliedJungleMonsterKills", 0),
-            "baronTakedowns": challenges.get("baronTakedowns", 0),
-            "blastConeOppositeOpponentCount": challenges.get("blastConeOppositeOpponentCount", 0),
-            "bountyGold": challenges.get("bountyGold", 0),
-            "buffsStolen": challenges.get("buffsStolen", 0),
-            "completeSupportQuestInTime": challenges.get("completeSupportQuestInTime", 0),
-            "controlWardsPlaced": challenges.get("controlWardsPlaced", 0),
-            "damagePerMinute": challenges.get("damagePerMinute", 0.0),
-            "damageTakenOnTeamPercentage": challenges.get("damageTakenOnTeamPercentage", 0.0),
-            "dancedWithRiftHerald": challenges.get("dancedWithRiftHerald", 0),
-            "deathsByEnemyChamps": challenges.get("deathsByEnemyChamps", 0),
-            "dodgeSkillShotsSmallWindow": challenges.get("dodgeSkillShotsSmallWindow", 0),
-            "doubleAces": challenges.get("doubleAces", 0),
-            "dragonTakedowns": challenges.get("dragonTakedowns", 0),
-            "earlyLaningPhaseGoldExpAdvantage": challenges.get("earlyLaningPhaseGoldExpAdvantage", 0.0),
-            "effectiveHealAndShielding": challenges.get("effectiveHealAndShielding", 0),
-            "elderDragonKillsWithOpposingSoul": challenges.get("elderDragonKillsWithOpposingSoul", 0),
-            "elderDragonMultikills": challenges.get("elderDragonMultikills", 0),
-            "enemyChampionImmobilizations": challenges.get("enemyChampionImmobilizations", 0),
-            "enemyJungleMonsterKills": challenges.get("enemyJungleMonsterKills", 0),
-            "epicMonsterKillsNearEnemyJungler": challenges.get("epicMonsterKillsNearEnemyJungler", 0),
-            "epicMonsterKillsWithin30SecondsOfSpawn": challenges.get("epicMonsterKillsWithin30SecondsOfSpawn", 0),
-            "epicMonsterSteals": challenges.get("epicMonsterSteals", 0),
-            "epicMonsterStolenWithoutSmite": challenges.get("epicMonsterStolenWithoutSmite", 0),
-            "firstTurretKilled": challenges.get("firstTurretKilled", 0),
-            "flawlessAces": challenges.get("flawlessAces", 0),
-            "fullTeamTakedown": challenges.get("fullTeamTakedown", 0),
-            "gameLength": challenges.get("gameLength", 0.0),
-            "getTakedownsInAllLanesEarlyJungleAsLaner": challenges.get("getTakedownsInAllLanesEarlyJungleAsLaner", 0),
-            "goldPerMinute": challenges.get("goldPerMinute", 0.0),
-            "hadOpenNexus": challenges.get("hadOpenNexus", 0),
-            "immobilizeAndKillWithAlly": challenges.get("immobilizeAndKillWithAlly", 0),
-            "initialBuffCount": challenges.get("initialBuffCount", 0),
-            "initialCrabCount": challenges.get("initialCrabCount", 0),
-            "jungleCsBefore10Minutes": challenges.get("jungleCsBefore10Minutes", 0),
-            "junglerTakedownsNearDamagedEpicMonster": challenges.get("junglerTakedownsNearDamagedEpicMonster", 0),
-            "kTurretsDestroyedBeforePlatesFall": challenges.get("kTurretsDestroyedBeforePlatesFall", 0),
+            "assist_streak_count": challenges.get("assistStreakCount", 0),
+            "ability_uses": challenges.get("abilityUses", 0),
+            "aces_before_15_minutes": challenges.get("acesBefore15Minutes", 0),
+            "allied_jungle_monster_kills": challenges.get("alliedJungleMonsterKills", 0),
+            "baron_takedowns": challenges.get("baronTakedowns", 0),
+            "blast_cone_opposite_opponent_count": challenges.get("blastConeOppositeOpponentCount", 0),
+            "bounty_gold": challenges.get("bountyGold", 0),
+            "buffs_stolen": challenges.get("buffsStolen", 0),
+            "complete_support_quest_in_time": challenges.get("completeSupportQuestInTime", 0),
+            "control_wards_placed": challenges.get("controlWardsPlaced", 0),
+            "damage_per_minute": challenges.get("damagePerMinute", 0.0),
+            "damage_taken_on_team_percentage": challenges.get("damageTakenOnTeamPercentage", 0.0),
+            "danced_with_rift_herald": challenges.get("dancedWithRiftHerald", 0),
+            "deaths_by_enemy_champs": challenges.get("deathsByEnemyChamps", 0),
+            "dodge_skill_shots_small_window": challenges.get("dodgeSkillShotsSmallWindow", 0),
+            "double_aces": challenges.get("doubleAces", 0),
+            "dragon_takedowns": challenges.get("dragonTakedowns", 0),
+            "early_laning_phase_gold_exp_advantage": challenges.get("earlyLaningPhaseGoldExpAdvantage", 0.0),
+            "effective_heal_and_shielding": challenges.get("effectiveHealAndShielding", 0),
+            "elder_dragon_kills_with_opposing_soul": challenges.get("elderDragonKillsWithOpposingSoul", 0),
+            "elder_dragon_multikills": challenges.get("elderDragonMultikills", 0),
+            "enemy_champion_immobilizations": challenges.get("enemyChampionImmobilizations", 0),
+            "enemy_jungle_monster_kills": challenges.get("enemyJungleMonsterKills", 0),
+            "epic_monster_kills_near_enemy_jungler": challenges.get("epicMonsterKillsNearEnemyJungler", 0),
+            "epic_monster_kills_within_30_seconds_of_spawn": challenges.get("epicMonsterKillsWithin30SecondsOfSpawn", 0),
+            "epic_monster_steals": challenges.get("epicMonsterSteals", 0),
+            "epic_monster_stolen_without_smite": challenges.get("epicMonsterStolenWithoutSmite", 0),
+            "first_turret_killed": challenges.get("firstTurretKilled", 0),
+            "flawless_aces": challenges.get("flawlessAces", 0),
+            "full_team_takedown": challenges.get("fullTeamTakedown", 0),
+            "game_length": challenges.get("gameLength", 0.0),
+            "get_takedowns_in_all_lanes_early_jungle_as_laner": challenges.get("getTakedownsInAllLanesEarlyJungleAsLaner", 0),
+            "gold_per_minute": challenges.get("goldPerMinute", 0.0),
+            "had_open_nexus": challenges.get("hadOpenNexus", 0),
+            "immobilize_and_kill_with_ally": challenges.get("immobilizeAndKillWithAlly", 0),
+            "initial_buff_count": challenges.get("initialBuffCount", 0),
+            "initial_crab_count": challenges.get("initialCrabCount", 0),
+            "jungle_cs_before_10_minutes": challenges.get("jungleCsBefore10Minutes", 0),
+            "jungler_takedowns_near_damaged_epic_monster": challenges.get("junglerTakedownsNearDamagedEpicMonster", 0),
+            "k_turrets_destroyed_before_plates_fall": challenges.get("kTurretsDestroyedBeforePlatesFall", 0),
             "kda": challenges.get("kda", 0.0),
-            "killAfterHiddenWithAlly": challenges.get("killAfterHiddenWithAlly", 0),
-            "killParticipation": challenges.get("killParticipation", 0.0),
-            "killedChampTookFullTeamDamageSurvived": challenges.get("killedChampTookFullTeamDamageSurvived", 0),
-            "killingSprees": challenges.get("killingSprees", 0),
-            "killsNearEnemyTurret": challenges.get("killsNearEnemyTurret", 0),
-            "killsOnOtherLanesEarlyJungleAsLaner": challenges.get("killsOnOtherLanesEarlyJungleAsLaner", 0),
-            "killsOnRecentlyHealedByAramPack": challenges.get("killsOnRecentlyHealedByAramPack", 0),
-            "killsUnderOwnTurret": challenges.get("killsUnderOwnTurret", 0),
-            "killsWithHelpFromEpicMonster": challenges.get("killsWithHelpFromEpicMonster", 0),
-            "knockEnemyIntoTeamAndKill": challenges.get("knockEnemyIntoTeamAndKill", 0),
-            "landSkillShotsEarlyGame": challenges.get("landSkillShotsEarlyGame", 0),
-            "laneMinionsFirst10Minutes": challenges.get("laneMinionsFirst10Minutes", 0),
-            "laningPhaseGoldExpAdvantage": challenges.get("laningPhaseGoldExpAdvantage", 0.0),
-            "legendaryCount": challenges.get("legendaryCount", 0),
-            "lostAnInhibitor": challenges.get("lostAnInhibitor", 0),
-            "maxCsAdvantageOnLaneOpponent": challenges.get("maxCsAdvantageOnLaneOpponent", 0),
-            "maxKillDeficit": challenges.get("maxKillDeficit", 0),
-            "maxLevelLeadLaneOpponent": challenges.get("maxLevelLeadLaneOpponent", 0),
-            "mejaisFullStackInTime": challenges.get("mejaisFullStackInTime", 0),
-            "moreEnemyJungleThanOpponent": challenges.get("moreEnemyJungleThanOpponent", 0),
-            "multiKillOneSpell": challenges.get("multiKillOneSpell", 0),
-            "multiTurretRiftHeraldCount": challenges.get("multiTurretRiftHeraldCount", 0),
+            "kill_after_hidden_with_ally": challenges.get("killAfterHiddenWithAlly", 0),
+            "kill_participation": challenges.get("killParticipation", 0.0),
+            "killed_champ_took_full_team_damage_survived": challenges.get("killedChampTookFullTeamDamageSurvived", 0),
+            "killing_sprees": challenges.get("killingSprees", 0),
+            "kills_near_enemy_turret": challenges.get("killsNearEnemyTurret", 0),
+            "kills_on_other_lanes_early_jungle_as_laner": challenges.get("killsOnOtherLanesEarlyJungleAsLaner", 0),
+            "kills_on_recently_healed_by_aram_pack": challenges.get("killsOnRecentlyHealedByAramPack", 0),
+            "kills_under_own_turret": challenges.get("killsUnderOwnTurret", 0),
+            "kills_with_help_from_epic_monster": challenges.get("killsWithHelpFromEpicMonster", 0),
+            "knock_enemy_into_team_and_kill": challenges.get("knockEnemyIntoTeamAndKill", 0),
+            "land_skill_shots_early_game": challenges.get("landSkillShotsEarlyGame", 0),
+            "lane_minions_first_10_minutes": challenges.get("laneMinionsFirst10Minutes", 0),
+            "laning_phase_gold_exp_advantage": challenges.get("laningPhaseGoldExpAdvantage", 0.0),
+            "legendary_count": challenges.get("legendaryCount", 0),
+            "lost_an_inhibitor": challenges.get("lostAnInhibitor", 0),
+            "max_cs_advantage_on_lane_opponent": challenges.get("maxCsAdvantageOnLaneOpponent", 0),
+            "max_kill_deficit": challenges.get("maxKillDeficit", 0),
+            "max_level_lead_lane_opponent": challenges.get("maxLevelLeadLaneOpponent", 0),
+            "mejais_full_stack_in_time": challenges.get("mejaisFullStackInTime", 0),
+            "more_enemy_jungle_than_opponent": challenges.get("moreEnemyJungleThanOpponent", 0),
+            "multi_kill_one_spell": challenges.get("multiKillOneSpell", 0),
+            "multi_turret_rift_herald_count": challenges.get("multiTurretRiftHeraldCount", 0),
             "multikills": challenges.get("multikills", 0),
-            "multikillsAfterAggressiveFlash": challenges.get("multikillsAfterAggressiveFlash", 0),
-            "mythicItemUsed": challenges.get("mythicItemUsed", 0),
-            "outerTurretExecutesBefore10Minutes": challenges.get("outerTurretExecutesBefore10Minutes", 0),
-            "outnumberedKills": challenges.get("outnumberedKills", 0),
-            "outnumberedNexusKill": challenges.get("outnumberedNexusKill", 0),
-            "perfectDragonSoulsTaken": challenges.get("perfectDragonSoulsTaken", 0),
-            "perfectGame": challenges.get("perfectGame", 0),
-            "pickKillWithAlly": challenges.get("pickKillWithAlly", 0),
-            "poroExplosions": challenges.get("poroExplosions", 0),
-            "quickCleanse": challenges.get("quickCleanse", 0),
-            "quickFirstTurret": challenges.get("quickFirstTurret", 0),
-            "quickSoloKills": challenges.get("quickSoloKills", 0),
-            "riftHeraldTakedowns": challenges.get("riftHeraldTakedowns", 0),
-            "saveAllyFromDeath": challenges.get("saveAllyFromDeath", 0),
-            "scuttleCrabKills": challenges.get("scuttleCrabKills", 0),
-            "skillshotsDodged": challenges.get("skillshotsDodged", 0),
-            "skillshotsHit": challenges.get("skillshotsHit", 0),
-            "snowballsHit": challenges.get("snowballsHit", 0),
-            "soloBaronKills": challenges.get("soloBaronKills", 0),
-            "soloKills": challenges.get("soloKills", 0),
-            "stealthWardsPlaced": challenges.get("stealthWardsPlaced", 0),
-            "survivedSingleDigitHpCount": challenges.get("survivedSingleDigitHpCount", 0),
-            "survivedThreeImmobilizesInFight": challenges.get("survivedThreeImmobilizesInFight", 0),
-            "takedownOnFirstTurret": challenges.get("takedownOnFirstTurret", 0),
+            "multikills_after_aggressive_flash": challenges.get("multikillsAfterAggressiveFlash", 0),
+            "mythic_item_used": challenges.get("mythicItemUsed", 0),
+            "outer_turret_executes_before_10_minutes": challenges.get("outerTurretExecutesBefore10Minutes", 0),
+            "outnumbered_kills": challenges.get("outnumberedKills", 0),
+            "outnumbered_nexus_kill": challenges.get("outnumberedNexusKill", 0),
+            "perfect_dragon_souls_taken": challenges.get("perfectDragonSoulsTaken", 0),
+            "perfect_game": challenges.get("perfectGame", 0),
+            "pick_kill_with_ally": challenges.get("pickKillWithAlly", 0),
+            "poro_explosions": challenges.get("poroExplosions", 0),
+            "quick_cleanse": challenges.get("quickCleanse", 0),
+            "quick_first_turret": challenges.get("quickFirstTurret", 0),
+            "quick_solo_kills": challenges.get("quickSoloKills", 0),
+            "rift_herald_takedowns": challenges.get("riftHeraldTakedowns", 0),
+            "save_ally_from_death": challenges.get("saveAllyFromDeath", 0),
+            "scuttle_crab_kills": challenges.get("scuttleCrabKills", 0),
+            "skillshots_dodged": challenges.get("skillshotsDodged", 0),
+            "skillshots_hit": challenges.get("skillshotsHit", 0),
+            "snowballs_hit": challenges.get("snowballsHit", 0),
+            "solo_baron_kills": challenges.get("soloBaronKills", 0),
+            "solo_kills": challenges.get("soloKills", 0),
+            "stealth_wards_placed": challenges.get("stealthWardsPlaced", 0),
+            "survived_single_digit_hp_count": challenges.get("survivedSingleDigitHpCount", 0),
+            "survived_three_immobilizes_in_fight": challenges.get("survivedThreeImmobilizesInFight", 0),
+            "takedown_on_first_turret": challenges.get("takedownOnFirstTurret", 0),
             "takedowns": challenges.get("takedowns", 0),
-            "takedownsAfterGainingLevelAdvantage": challenges.get("takedownsAfterGainingLevelAdvantage", 0),
-            "takedownsBeforeJungleMinionSpawn": challenges.get("takedownsBeforeJungleMinionSpawn", 0),
-            "takedownsFirstXMinutes": challenges.get("takedownsFirstXMinutes", 0),
-            "takedownsInAlcove": challenges.get("takedownsInAlcove", 0),
-            "takedownsInEnemyFountain": challenges.get("takedownsInEnemyFountain", 0),
-            "teamBaronKills": challenges.get("teamBaronKills", 0),
-            "teamDamagePercentage": challenges.get("teamDamagePercentage", 0.0),
-            "teamElderDragonKills": challenges.get("teamElderDragonKills", 0),
-            "teamRiftHeraldKills": challenges.get("teamRiftHeraldKills", 0),
-            "tookLargeDamageSurvived": challenges.get("tookLargeDamageSurvived", 0),
-            "turretPlatesTaken": challenges.get("turretPlatesTaken", 0),
-            "turretTakedowns": challenges.get("turretTakedowns", 0),
-            "turretsTakenWithRiftHerald": challenges.get("turretsTakenWithRiftHerald", 0),
-            "twentyMinionsIn3SecondsCount": challenges.get("twentyMinionsIn3SecondsCount", 0),
-            "twoWardsOneSweeperCount": challenges.get("twoWardsOneSweeperCount", 0),
-            "unseenRecalls": challenges.get("unseenRecalls", 0),
-            "visionScoreAdvantageLaneOpponent": challenges.get("visionScoreAdvantageLaneOpponent", 0.0),
-            "visionScorePerMinute": challenges.get("visionScorePerMinute", 0.0),
-            "wardTakedowns": challenges.get("wardTakedowns", 0),
-            "wardTakedownsBefore20m": challenges.get("wardTakedownsBefore20m", 0),
-            "wardsGuarded": challenges.get("wardsGuarded", 0),
+            "takedowns_after_gaining_level_advantage": challenges.get("takedownsAfterGainingLevelAdvantage", 0),
+            "takedowns_before_jungle_minion_spawn": challenges.get("takedownsBeforeJungleMinionSpawn", 0),
+            "takedowns_first_x_minutes": challenges.get("takedownsFirstXMinutes", 0),
+            "takedowns_in_alcove": challenges.get("takedownsInAlcove", 0),
+            "takedowns_in_enemy_fountain": challenges.get("takedownsInEnemyFountain", 0),
+            "team_baron_kills": challenges.get("teamBaronKills", 0),
+            "team_damage_percentage": challenges.get("teamDamagePercentage", 0.0),
+            "team_elder_dragon_kills": challenges.get("teamElderDragonKills", 0),
+            "team_rift_herald_kills": challenges.get("teamRiftHeraldKills", 0),
+            "took_large_damage_survived": challenges.get("tookLargeDamageSurvived", 0),
+            "turret_plates_taken": challenges.get("turretPlatesTaken", 0),
+            "turret_takedowns": challenges.get("turretTakedowns", 0),
+            "turrets_taken_with_rift_herald": challenges.get("turretsTakenWithRiftHerald", 0),
+            "twenty_minions_in_3_seconds_count": challenges.get("twentyMinionsIn3SecondsCount", 0),
+            "two_wards_one_sweeper_count": challenges.get("twoWardsOneSweeperCount", 0),
+            "unseen_recalls": challenges.get("unseenRecalls", 0),
+            "vision_score_advantage_lane_opponent": challenges.get("visionScoreAdvantageLaneOpponent", 0.0),
+            "vision_score_per_minute": challenges.get("visionScorePerMinute", 0.0),
+            "ward_takedowns": challenges.get("wardTakedowns", 0),
+            "ward_takedowns_before_20m": challenges.get("wardTakedownsBefore20m", 0),
+            "wards_guarded": challenges.get("wardsGuarded", 0),
         }
 
         challenges_list.append(values)
 
-    return challenges_list
+    return pd.DataFrame(challenges_list)
+
 
 def get_match_events(match_timeline_dto):
     frames = match_timeline_dto.get('info', {}).get('frames', [])
@@ -417,7 +420,7 @@ def get_match_events(match_timeline_dto):
 
             events_list.append(events_dict)
 
-    return events_list
+    return pd.DataFrame(events_list)
 
 def get_participant_dto(match_dto):
     participants = match_dto.get("info").get("participants")
@@ -426,39 +429,38 @@ def get_participant_dto(match_dto):
     participant_dto_list = []
 
     for participant in participants:
-        # Extracting all necessary participant data using .get() to avoid KeyError
         values = {
             "match_id": match_id,
             "participant_id": participant.get("participantId", ""),
             "assists": participant.get("assists", ""),
-            "baronKills": participant.get("baronKills", ""),
-            "bountyLevel": participant.get("bountyLevel", ""),
-            "champExperience": participant.get("champExperience", ""),
-            "champLevel": participant.get("champLevel", ""),
-            "championId": participant.get("championId", ""),
-            "championName": participant.get("championName", ""),
-            "championTransform": participant.get("championTransform", ""),
-            "consumablesPurchased": participant.get("consumablesPurchased", ""),
-            "damageDealtToBuildings": participant.get("damageDealtToBuildings", ""),
-            "damageDealtToObjectives": participant.get("damageDealtToObjectives", ""),
-            "damageDealtToTurrets": participant.get("damageDealtToTurrets", ""),
-            "damageSelfMitigated": participant.get("damageSelfMitigated", ""),
+            "baron_kills": participant.get("baronKills", ""),
+            "bounty_level": participant.get("bountyLevel", ""),
+            "champ_experience": participant.get("champExperience", ""),
+            "champ_level": participant.get("champLevel", ""),
+            "champion_id": participant.get("championId", ""),
+            "champion_name": participant.get("championName", ""),
+            "champion_transform": participant.get("championTransform", ""),
+            "consumables_purchased": participant.get("consumablesPurchased", ""),
+            "damage_dealt_to_buildings": participant.get("damageDealtToBuildings", ""),
+            "damage_dealt_to_objectives": participant.get("damageDealtToObjectives", ""),
+            "damage_dealt_to_turrets": participant.get("damageDealtToTurrets", ""),
+            "damage_self_mitigated": participant.get("damageSelfMitigated", ""),
             "deaths": participant.get("deaths", ""),
-            "detectorWardsPlaced": participant.get("detectorWardsPlaced", ""),
-            "doubleKills": participant.get("doubleKills", ""),
-            "dragonKills": participant.get("dragonKills", ""),
-            "firstBloodAssist": participant.get("firstBloodAssist", ""),
-            "firstBloodKill": participant.get("firstBloodKill", ""),
-            "firstTowerAssist": participant.get("firstTowerAssist", ""),
-            "firstTowerKill": participant.get("firstTowerKill", ""),
-            "gameEndedInEarlySurrender": participant.get("gameEndedInEarlySurrender", ""),
-            "gameEndedInSurrender": participant.get("gameEndedInSurrender", ""),
-            "goldEarned": participant.get("goldEarned", ""),
-            "goldSpent": participant.get("goldSpent", ""),
-            "individualPosition": participant.get("individualPosition", ""),
-            "inhibitorKills": participant.get("inhibitorKills", ""),
-            "inhibitorTakedowns": participant.get("inhibitorTakedowns", ""),
-            "inhibitorsLost": participant.get("inhibitorsLost", ""),
+            "detector_wards_placed": participant.get("detectorWardsPlaced", ""),
+            "double_kills": participant.get("doubleKills", ""),
+            "dragon_kills": participant.get("dragonKills", ""),
+            "first_blood_assist": participant.get("firstBloodAssist", ""),
+            "first_blood_kill": participant.get("firstBloodKill", ""),
+            "first_tower_assist": participant.get("firstTowerAssist", ""),
+            "first_tower_kill": participant.get("firstTowerKill", ""),
+            "game_ended_in_early_surrender": participant.get("gameEndedInEarlySurrender", ""),
+            "game_ended_in_surrender": participant.get("gameEndedInSurrender", ""),
+            "gold_earned": participant.get("goldEarned", ""),
+            "gold_spent": participant.get("goldSpent", ""),
+            "individual_position": participant.get("individualPosition", ""),
+            "inhibitor_kills": participant.get("inhibitorKills", ""),
+            "inhibitor_takedowns": participant.get("inhibitorTakedowns", ""),
+            "inhibitors_lost": participant.get("inhibitorsLost", ""),
             "item0": participant.get("item0", ""),
             "item1": participant.get("item1", ""),
             "item2": participant.get("item2", ""),
@@ -466,81 +468,82 @@ def get_participant_dto(match_dto):
             "item4": participant.get("item4", ""),
             "item5": participant.get("item5", ""),
             "item6": participant.get("item6", ""),
-            "itemsPurchased": participant.get("itemsPurchased", ""),
-            "killingSprees": participant.get("killingSprees", ""),
+            "items_purchased": participant.get("itemsPurchased", ""),
+            "killing_sprees": participant.get("killingSprees", ""),
             "kills": participant.get("kills", ""),
             "lane": participant.get("lane", ""),
-            "largestCriticalStrike": participant.get("largestCriticalStrike", ""),
-            "largestKillingSpree": participant.get("largestKillingSpree", ""),
-            "largestMultiKill": participant.get("largestMultiKill", ""),
-            "longestTimeSpentLiving": participant.get("longestTimeSpentLiving", ""),
-            "magicDamageDealt": participant.get("magicDamageDealt", ""),
-            "magicDamageDealtToChampions": participant.get("magicDamageDealtToChampions", ""),
-            "magicDamageTaken": participant.get("magicDamageTaken", ""),
-            "neutralMinionsKilled": participant.get("neutralMinionsKilled", ""),
-            "nexusKills": participant.get("nexusKills", ""),
-            "nexusTakedowns": participant.get("nexusTakedowns", ""),
-            "nexusLost": participant.get("nexusLost", ""),
-            "objectivesStolen": participant.get("objectivesStolen", ""),
-            "objectivesStolenAssists": participant.get("objectivesStolenAssists", ""),
-            "pentaKills": participant.get("pentaKills", ""),
-            "physicalDamageDealt": participant.get("physicalDamageDealt", ""),
-            "physicalDamageDealtToChampions": participant.get("physicalDamageDealtToChampions", ""),
-            "physicalDamageTaken": participant.get("physicalDamageTaken", ""),
-            "profileIcon": participant.get("profileIcon", ""),
+            "largest_critical_strike": participant.get("largestCriticalStrike", ""),
+            "largest_killing_spree": participant.get("largestKillingSpree", ""),
+            "largest_multi_kill": participant.get("largestMultiKill", ""),
+            "longest_time_spent_living": participant.get("longestTimeSpentLiving", ""),
+            "magic_damage_dealt": participant.get("magicDamageDealt", ""),
+            "magic_damage_dealt_to_champions": participant.get("magicDamageDealtToChampions", ""),
+            "magic_damage_taken": participant.get("magicDamageTaken", ""),
+            "neutral_minions_killed": participant.get("neutralMinionsKilled", ""),
+            "nexus_kills": participant.get("nexusKills", ""),
+            "nexus_takedowns": participant.get("nexusTakedowns", ""),
+            "nexus_lost": participant.get("nexusLost", ""),
+            "objectives_stolen": participant.get("objectivesStolen", ""),
+            "objectives_stolen_assists": participant.get("objectivesStolenAssists", ""),
+            "penta_kills": participant.get("pentaKills", ""),
+            "physical_damage_dealt": participant.get("physicalDamageDealt", ""),
+            "physical_damage_dealt_to_champions": participant.get("physicalDamageDealtToChampions", ""),
+            "physical_damage_taken": participant.get("physicalDamageTaken", ""),
+            "profile_icon": participant.get("profileIcon", ""),
             "puuid": participant.get("puuid", ""),
-            "quadraKills": participant.get("quadraKills", ""),
-            "riotIdName": participant.get("riotIdName", ""),
-            "riotIdTagline": participant.get("riotIdTagline", ""),
+            "quadra_kills": participant.get("quadraKills", ""),
+            "riot_id_name": participant.get("riotIdName", ""),
+            "riot_id_tagline": participant.get("riotIdTagline", ""),
             "role": participant.get("role", ""),
-            "sightWardsBoughtInGame": participant.get("sightWardsBoughtInGame", ""),
-            "spell1Casts": participant.get("spell1Casts", ""),
-            "spell2Casts": participant.get("spell2Casts", ""),
-            "spell3Casts": participant.get("spell3Casts", ""),
-            "spell4Casts": participant.get("spell4Casts", ""),
-            "summoner1Casts": participant.get("summoner1Casts", ""),
-            "summoner1Id": participant.get("summoner1Id", ""),
-            "summoner2Casts": participant.get("summoner2Casts", ""),
-            "summoner2Id": participant.get("summoner2Id", ""),
-            "summonerId": participant.get("summonerId", ""),
-            "summonerLevel": participant.get("summonerLevel", ""),
-            "summonerName": participant.get("summonerName", ""),
-            "teamEarlySurrendered": participant.get("teamEarlySurrendered", ""),
-            "teamId": participant.get("teamId", ""),
-            "teamPosition": participant.get("teamPosition", ""),
-            "timeCCingOthers": participant.get("timeCCingOthers", ""),
-            "timePlayed": participant.get("timePlayed", ""),
-            "totalDamageDealt": participant.get("totalDamageDealt", ""),
-            "totalDamageDealtToChampions": participant.get("totalDamageDealtToChampions", ""),
-            "totalDamageShieldedOnTeammates": participant.get("totalDamageShieldedOnTeammates", ""),
-            "totalDamageTaken": participant.get("totalDamageTaken", ""),
-            "totalHeal": participant.get("totalHeal", ""),
-            "totalHealsOnTeammates": participant.get("totalHealsOnTeammates", ""),
-            "totalMinionsKilled": participant.get("totalMinionsKilled", ""),
-            "totalTimeCCDealt": participant.get("totalTimeCCDealt", ""),
-            "totalTimeSpentDead": participant.get("totalTimeSpentDead", ""),
-            "totalUnitsHealed": participant.get("totalUnitsHealed", ""),
-            "tripleKills": participant.get("tripleKills", ""),
-            "trueDamageDealt": participant.get("trueDamageDealt", ""),
-            "trueDamageDealtToChampions": participant.get("trueDamageDealtToChampions", ""),
-            "trueDamageTaken": participant.get("trueDamageTaken", ""),
-            "turretKills": participant.get("turretKills", ""),
-            "turretTakedowns": participant.get("turretTakedowns", ""),
-            "turretsLost": participant.get("turretsLost", ""),
-            "unrealKills": participant.get("unrealKills", ""),
-            "visionScore": participant.get("visionScore", ""),
-            "visionWardsBoughtInGame": participant.get("visionWardsBoughtInGame", ""),
-            "wardsKilled": participant.get("wardsKilled", ""),
-            "wardsPlaced": participant.get("wardsPlaced", ""),
+            "sight_wards_bought_in_game": participant.get("sightWardsBoughtInGame", ""),
+            "spell1_casts": participant.get("spell1Casts", ""),
+            "spell2_casts": participant.get("spell2Casts", ""),
+            "spell3_casts": participant.get("spell3Casts", ""),
+            "spell4_casts": participant.get("spell4Casts", ""),
+            "summoner1_casts": participant.get("summoner1Casts", ""),
+            "summoner1_id": participant.get("summoner1Id", ""),
+            "summoner2_casts": participant.get("summoner2Casts", ""),
+            "summoner2_id": participant.get("summoner2Id", ""),
+            "summoner_id": participant.get("summonerId", ""),
+            "summoner_level": participant.get("summonerLevel", ""),
+            "summoner_name": participant.get("summonerName", ""),
+            "team_early_surrendered": participant.get("teamEarlySurrendered", ""),
+            "team_id": participant.get("teamId", ""),
+            "team_position": participant.get("teamPosition", ""),
+            "time_ccing_others": participant.get("timeCCingOthers", ""),
+            "time_played": participant.get("timePlayed", ""),
+            "total_damage_dealt": participant.get("totalDamageDealt", ""),
+            "total_damage_dealt_to_champions": participant.get("totalDamageDealtToChampions", ""),
+            "total_damage_shielded_on_teammates": participant.get("totalDamageShieldedOnTeammates", ""),
+            "total_damage_taken": participant.get("totalDamageTaken", ""),
+            "total_heal": participant.get("totalHeal", ""),
+            "total_heals_on_teammates": participant.get("totalHealsOnTeammates", ""),
+            "total_minions_killed": participant.get("totalMinionsKilled", ""),
+            "total_time_cc_dealt": participant.get("totalTimeCCDealt", ""),
+            "total_time_spent_dead": participant.get("totalTimeSpentDead", ""),
+            "total_units_healed": participant.get("totalUnitsHealed", ""),
+            "triple_kills": participant.get("tripleKills", ""),
+            "true_damage_dealt": participant.get("trueDamageDealt", ""),
+            "true_damage_dealt_to_champions": participant.get("trueDamageDealtToChampions", ""),
+            "true_damage_taken": participant.get("trueDamageTaken", ""),
+            "turret_kills": participant.get("turretKills", ""),
+            "turret_takedowns": participant.get("turretTakedowns", ""),
+            "turrets_lost": participant.get("turretsLost", ""),
+            "unreal_kills": participant.get("unrealKills", ""),
+            "vision_score": participant.get("visionScore", ""),
+            "vision_wards_bought_in_game": participant.get("visionWardsBoughtInGame", ""),
+            "wards_killed": participant.get("wardsKilled", ""),
+            "wards_placed": participant.get("wardsPlaced", ""),
             "win": participant.get("win", ""),
             "perks_defense": participant.get("perks", {}).get("defense", ""),
             "perks_flex": participant.get("perks", {}).get("flex", ""),
             "perks_offense": participant.get("perks", {}).get("offense", ""),
-            }
+        }
 
         participant_dto_list.append(values)
         
-    return participant_dto_list
+    return pd.DataFrame(participant_dto_list)
+
 
 def get_participant_frames(match_timeline_dto):
     frames = match_timeline_dto.get('info', {}).get('frames', [])
@@ -552,7 +555,6 @@ def get_participant_frames(match_timeline_dto):
         participant_frames = frame.get('participant_frames', {})
 
         for participant_id, participant_frame in participant_frames.items():
-            # Access attributes using .get method
             participant_id = participant_frame.get('participant_id', None)
             timestamp = frame.get('timestamp', None)  # Assuming Frame class has a 'timestamp' attribute
             level = participant_frame.get('level', None)
@@ -563,8 +565,6 @@ def get_participant_frames(match_timeline_dto):
             minions_killed = participant_frame.get('minions_killed', None)
             jungle_minions_killed = participant_frame.get('jungle_minions_killed', None)
             time_enemy_spent_controlled = participant_frame.get('time_enemy_spent_controlled', None)
-
-
             position_x = participant_frame.position["x"]
             position_y = participant_frame.position["y"]
 
@@ -587,5 +587,5 @@ def get_participant_frames(match_timeline_dto):
 
             participant_frames_list.append(values)
 
-    return participant_frames_list
+    return pd.DataFrame(participant_frames_list)
 
