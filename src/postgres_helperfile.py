@@ -1,14 +1,22 @@
 import os
+import contextlib
+import logging
+
+from sqlalchemy import create_engine
 import psycopg2
 from psycopg2.extras import execute_values
 from psycopg2 import DatabaseError, IntegrityError
 from dotenv import load_dotenv
-import contextlib
-import logging
-from typing import Dict
 
 # Load environment variables
 load_dotenv()
+
+logging.basicConfig(
+    filename="app.log",
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+
 
 class SQLHelper:
     def __init__(self):
@@ -34,7 +42,9 @@ class SQLHelper:
                     placeholders = ", ".join(["%s"] * len(data_dict))
                     values = tuple(data_dict.values())
 
-                    insert_stmt = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+                    insert_stmt = (
+                        f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+                    )
                     cursor.execute(insert_stmt, values)
                     conn.commit()
         except Exception as e:
@@ -45,11 +55,16 @@ class SQLHelper:
         try:
             with self.db_connection() as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute("CREATE USER %s WITH PASSWORD %s;", (username, password))
-                    cursor.execute("GRANT CONNECT ON DATABASE loldb TO %s;", (username,))
+                    cursor.execute(
+                        "CREATE USER %s WITH PASSWORD %s;", (username, password)
+                    )
+                    cursor.execute(
+                        "GRANT CONNECT ON DATABASE loldb TO %s;", (username,)
+                    )
                     cursor.execute("GRANT USAGE ON SCHEMA public TO %s;", (username,))
                     cursor.execute(
-                        "GRANT SELECT ON ALL TABLES IN SCHEMA public TO %s;", (username,)
+                        "GRANT SELECT ON ALL TABLES IN SCHEMA public TO %s;",
+                        (username,),
                     )
                     cursor.execute(
                         "ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT ON TABLES TO %s;",
@@ -89,8 +104,25 @@ def connect_db(user_role="readonly"):
     port = "5432"
 
     return psycopg2.connect(
-        dbname=dbname, user=user, password=password, host=host, port=port, connect_timeout=10
+        dbname=dbname,
+        user=user,
+        password=password,
+        host=host,
+        port=port,
+        connect_timeout=10,
     )
+
+
+def create_postgres_engine():
+    dbname = "loldb"
+    user = os.getenv("ADMIN_POSTGRES_USER")
+    password = os.getenv("ADMIN_POSTGRES_PASSWORD")
+    host = "postgres"
+    port = "5432"
+    connection_str = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
+    engine = create_engine(connection_str)
+    return engine
+
 
 def execute_sql_file(file_path):
     with open(file_path, "r") as file:
@@ -98,6 +130,7 @@ def execute_sql_file(file_path):
         with connect_db("admin") as conn:
             with conn.cursor() as cursor:
                 cursor.execute(sql_script)
+
 
 def execute_batch_query(query, values_list, page_size=100):
     """
@@ -123,26 +156,48 @@ def execute_batch_query(query, values_list, page_size=100):
         conn.rollback()
         raise  # Re-raise the exception to be caught in the calling function
 
-def add_df_to_table(table_name, data_df):
+
+def execute_query(query, data_tuple):
+    """
+    Execute a single SQL query using psycopg2's execute method.
+
+    Args:
+        query (str): The SQL query template to execute.
+        data_tuple (tuple): A tuple containing the values to insert.
+
+    Returns:
+        None
+    """
     try:
-        with connect_db() as conn:
-            with conn.cursor("admin") as cursor:
-                cursor.execute(f"SELECT * FROM {table_name} LIMIT 0")
-                db_columns = [desc[0] for desc in cursor.description]
-                df_columns = data_df.columns.tolist()
-
-                if db_columns != df_columns:
-                    print("Columns in df do not match cols in db table. Aborted.")
-                    return
-
-                values = [tuple(row) for row in data_df.values]
-                insert_stmt = f"INSERT INTO {table_name} ({','.join(df_columns)}) VALUES %s"
-                execute_values(cursor, insert_stmt, values)
+        with connect_db("admin") as conn:
+            with conn.cursor() as cursor:
+                cursor.execute(query, data_tuple)
                 conn.commit()
+                logging.info("Data inserted successfully")
 
     except IntegrityError as e:
-        print(f"Integrity error occurred: {e}")
+        logging.error("Integrity error occurred: %s", e)
+        conn.rollback()  # Rollback in case of error
     except DatabaseError as e:
-        print(f"Database error occurred: {e}")
+        logging.error("Database error occurred: %s", e)
+        conn.rollback()
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        logging.error("An unexpected error occurred: %s", e)
+        conn.rollback()
+
+
+def match_id_not_in_table(table_name, match_id):
+    try:
+        with connect_db() as conn:
+            with conn.cursor() as cursor:
+                # Ensure table_name is safe to use in the query
+                # Example: validate table_name against a list of known table names
+
+                query = f"SELECT match_id FROM {table_name} WHERE match_id = %s"
+                cursor.execute(query, [match_id])
+                result = cursor.fetchone()  # Fetch one record from the query result
+                return result is None  # Return True if no record found
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
