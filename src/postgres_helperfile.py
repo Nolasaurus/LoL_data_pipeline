@@ -79,10 +79,16 @@ class SQLHelper:
             with self.db_connection() as conn:
                 with conn.cursor() as cursor:
                     cursor.execute(query, values)
-                    if commit:
+                    if query.strip().lower().startswith("select"):
+                        # Fetch data and column names for SELECT queries
+                        rows = cursor.fetchall()
+                        columns = [desc[0] for desc in cursor.description]
+                        return rows, columns
+
+                    elif commit:
+                        # Commit changes for INSERT, UPDATE, DELETE queries
                         conn.commit()
-                    else:
-                        return cursor.fetchall()
+
         except Exception as e:
             logging.error("Error in execute_query: %s", e)
             raise
@@ -100,7 +106,7 @@ def connect_db(user_role="readonly"):
         if user_role == "admin"
         else os.getenv("READONLY_POSTGRES_PASSWORD")
     )
-    host = "postgres"
+    host = "localhost"
     port = "5432"
 
     return psycopg2.connect(
@@ -117,7 +123,7 @@ def create_postgres_engine():
     dbname = "loldb"
     user = os.getenv("ADMIN_POSTGRES_USER")
     password = os.getenv("ADMIN_POSTGRES_PASSWORD")
-    host = "postgres"
+    host = "localhost"
     port = "5432"
     connection_str = f"postgresql://{user}:{password}@{host}:{port}/{dbname}"
     engine = create_engine(connection_str)
