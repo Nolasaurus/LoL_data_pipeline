@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 from postgres_helperfile import SQLHelper
+import jinja2
+
 
 sql_helper = SQLHelper()
 
@@ -48,5 +50,5 @@ def viz_match_summary(match_id):
     plt.tight_layout()
     plt.show()
 
-# Example usage
 viz_match_summary('NA1_4466882444')
+
