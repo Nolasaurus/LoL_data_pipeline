@@ -18,7 +18,7 @@ class TestConnectDB(unittest.TestCase):
             dbname="loldb", 
             user="readonly_user", 
             password="readonly_password", 
-            host="postgres", 
+            host="localhost", 
             port="5432",
             connect_timeout=10  # Include the connect_timeout parameter in the assertion
         )
@@ -37,14 +37,14 @@ class TestConnectDB(unittest.TestCase):
             dbname="loldb", 
             user="admin_user", 
             password="admin_password", 
-            host="postgres", 
+            host="localhost", 
             port="5432",
             connect_timeout=10
         )
 
 class TestSQLHelper(unittest.TestCase):
 
-    @patch('postgres_helperfile].connect_db')
+    @patch('postgres_helperfile.connect_db')
     def test_insert_dict(self, mock_connect_db):
         # Mock database connection and cursor
         mock_conn = MagicMock()
