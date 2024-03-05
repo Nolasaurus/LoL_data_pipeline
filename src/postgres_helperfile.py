@@ -17,6 +17,17 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
+def main():
+    conn = connect_db()
+    with conn.cursor() as cursor:
+        # Query to list all tables in the public schema
+        cursor.execute("""
+            SELECT table_name
+            FROM information_schema.tables
+            WHERE table_schema = 'public'
+        """)
+        tables = cursor.fetchall()  # Fetch all table names in the public schema
+    print(tables)
 
 class SQLHelper:
     def __init__(self):
@@ -24,7 +35,7 @@ class SQLHelper:
 
     @contextlib.contextmanager
     def db_connection(self, userrole="readonly"):
-        conn = connect_db(userrole)  # Replace with actual connection logic
+        conn = connect_db(userrole)  
         try:
             yield conn
         except psycopg2.DatabaseError as e:
@@ -207,3 +218,36 @@ def match_id_not_in_table(table_name, match_id):
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
+    
+import pandas as pd
+import psycopg2  # Assuming psycopg2 for PostgreSQL connection
+from psycopg2.extensions import AsIs
+
+def df_columns_match_table_columns(cursor, table_name, df):
+    cursor.execute("SELECT * FROM %s LIMIT 0", (AsIs(table_name),))
+    table_columns = [desc[0] for desc in cursor.description]
+    df_columns = df.columns.str.lower().tolist()
+    # Compare case-insensitive lists of column names
+    return set(df_columns) == set(map(str.lower, table_columns))
+
+def add_df_to_table(table_name, df):
+    try:
+        with connect_db("admin") as conn:
+            with conn.cursor() as cursor:
+                if df_columns_match_table_columns(cursor, table_name, df):
+                    placeholders = ', '.join(['%s'] * len(df.columns))
+                    columns = ', '.join(df.columns)
+                    query = f"INSERT INTO {table_name} ({columns}) VALUES ({placeholders})"
+                    for _, row in df.iterrows():
+                        cursor.execute(query, tuple(row))
+                    conn.commit()  # Commit the transaction
+                    return True
+                else:
+                    print("DataFrame columns do not match table columns.")
+                    return False
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+    
+if __name__ == '__main__':
+    main()
