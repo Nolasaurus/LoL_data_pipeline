@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from api_client import API_Client
 
 # Test class for GetMatchByMatchId
@@ -21,15 +21,18 @@ def test_get_match_by_match_id_successful(mock_get):
 
 @patch('api_client.requests.get')
 def test_get_match_by_match_id_failure(mock_get):
-    mock_response = mock_get.return_value
+    # Mock the get method to return a response with a 404 status code
+    mock_response = MagicMock()
     mock_response.status_code = 404
+    # Mock the .json() method to raise an exception, simulating what happens when there is no JSON to parse
+    mock_response.json.side_effect = Exception("404 Not Found")
+    mock_get.return_value = mock_response
 
     match_id = 'invalid_match_id'
     client = API_Client()
     result = client.get_match_by_match_id(match_id)
 
     assert result is None
-
 
 # Test class for GetMatchIdsByPuuid
 @patch('api_client.requests.get')
@@ -49,15 +52,18 @@ def test_get_match_ids_by_puuid_successful(mock_get):
 
 @patch('api_client.requests.get')
 def test_get_match_ids_by_puuid_failure(mock_get):
-    mock_response = mock_get.return_value
+    # Create a mock response object with a 404 status code
+    mock_response = MagicMock()
     mock_response.status_code = 404
+    # Mock the .json() method to raise an exception when called
+    mock_response.json.side_effect = Exception("404 Not Found")
+    mock_get.return_value = mock_response
 
     puu_id = 'invalid_puu_id'
     client = API_Client()
     result = client.get_match_ids_by_puuid(puu_id)
 
     assert result is None
-
 
 # Test class for GetMatchTimeline
 @patch('api_client.requests.get')
@@ -77,12 +83,17 @@ def test_get_match_timeline_successful(mock_get):
 
 @patch('api_client.requests.get')
 def test_get_match_timeline_failure(mock_get):
-    mock_response = mock_get.return_value
+    # Setup the mock response
+    mock_response = MagicMock()
     mock_response.status_code = 404
-
+    # Ensure calling .json() on the mock response raises an exception
+    mock_response.json.side_effect = Exception("404 Not Found")
+    mock_get.return_value = mock_response
+    
     match_id = 'invalid_match_id'
-    result = API_Client().get_match_timeline(match_id)
-
+    client = API_Client()
+    result = client.get_match_timeline(match_id)
+    
     assert result is None
 
 
@@ -101,10 +112,15 @@ def test_get_puuid_by_name_successful(mock_get):
 
 @patch('api_client.requests.get')
 def test_get_puuid_by_name_failure(mock_get):
-    mock_response = mock_get.return_value
+    # Setup the mock response
+    mock_response = MagicMock()
     mock_response.status_code = 404
-
+    # Ensure calling .json() on the mock response raises an exception
+    mock_response.json.side_effect = Exception("404 Not Found")
+    mock_get.return_value = mock_response
+    
     summoner_name = 'InvalidSummonerName'
-    result = API_Client().get_summoner_by_name(summoner_name)
-
+    client = API_Client()
+    result = client.get_summoner_by_name(summoner_name)
+    
     assert result is None
